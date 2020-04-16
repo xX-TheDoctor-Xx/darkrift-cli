@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "darkrift-cli", "darkrift-cli\darkrift-cli.csproj", "{5BC6F70B-B13B-485C-8F59-9F23E6AD3436}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "darkrift-download-plugin", "darkrift-download-plugin\darkrift-download-plugin.csproj", "{DE8BC09A-DE89-429B-A178-417ADC951682}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5BC6F70B-B13B-485C-8F59-9F23E6AD3436}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BC6F70B-B13B-485C-8F59-9F23E6AD3436}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BC6F70B-B13B-485C-8F59-9F23E6AD3436}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE8BC09A-DE89-429B-A178-417ADC951682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE8BC09A-DE89-429B-A178-417ADC951682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE8BC09A-DE89-429B-A178-417ADC951682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE8BC09A-DE89-429B-A178-417ADC951682}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
