@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>darkrift_cli</RootNamespace>
     <Version>0.3.2</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -21,7 +21,7 @@
     <MakeDir Directories="$(OutputPath)/templates/" />
 
     <ItemGroup>
-        <FilesToDelete Include="$(OutputPath)/templates/*.zip"/>
+        <FilesToDelete Include="$(OutputPath)/templates/*.zip" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
 
