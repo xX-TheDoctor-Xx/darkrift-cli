@@ -362,7 +362,7 @@ namespace DarkRift.Cli
                 }
                 else // PackageState.Failed
                 {
-
+                    Console.WriteLine(Output.Red($"Something went wrong"));
                 }
             }
             else if (opts.Uninstall)
@@ -405,12 +405,12 @@ namespace DarkRift.Cli
                     }
                     else // PackageState.Failed
                     {
-                        
+                        Console.WriteLine(Output.Red($"Something went wrong"));
                     }
                 }
                 else
                 {
-                    PackageState state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package);
+                    PackageState state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package, false);
                     // check if success
                     if (state == PackageState.Installed)
                     {
@@ -433,7 +433,7 @@ namespace DarkRift.Cli
                     }
                     else // PackageState.Failed
                     {
-
+                        Console.WriteLine(Output.Red($"Something went wrong"));
                     }
                 }
             }
@@ -442,14 +442,30 @@ namespace DarkRift.Cli
                 // If --cli is defined we upgrade our runtime
                 if (opts.UpgradeCli)
                 {
-                    // we just update all dlls in
-                    // System.Reflection.Assembly.GetEntryAssembly().Location;
-                    // this should do the trick
+                    string myPath = Directory.GetDirectoryRoot(Assembly.GetEntryAssembly().Location);
+
+                    // i have no idea how i should do this
                 }
                 // If it is not defined it just updates all packages to the latest version of the sdk
                 else
                 {
-
+                    foreach (Package package in LocalPackageManager.PackageList)
+                    {
+                        PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p, true);
+                        // check if success
+                        if (state == PackageState.Installed)
+                        {
+                            Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
+                        }
+                        else if (state == PackageState.UpToDate)
+                        {
+                            Console.WriteLine($"Package {opts.PackageId} is up to date");
+                        }
+                        else // PackageState.Failed
+                        {
+                            Console.WriteLine(Output.Red($"Something went wrong updating {package.ID}"));
+                        }
+                    }
                 }
             }
 

@@ -111,7 +111,7 @@ namespace DarkRift.PMF.Managers
         /// </summary>
         /// <param name="id"></param>
         /// <returns>true if update success, false if package is not installed</returns>
-        public static PackageState UpdateBySdkVersion(string id, out Package package)
+        public static PackageState UpdateBySdkVersion(string id, out Package package, bool dontAsk)
         {
             package = null;
 
@@ -129,7 +129,7 @@ namespace DarkRift.PMF.Managers
             if (localPackage.Assets[0].Version == asset.Version)
                 return PackageState.UpToDate;
 
-            if (validateSdkVersion(asset))
+            if (dontAsk || validateSdkVersion(asset))
             {
                 Uninstall(id);
                 return InstallBySdkVersion(id, out package);
