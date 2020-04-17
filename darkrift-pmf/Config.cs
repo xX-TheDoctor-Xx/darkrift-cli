@@ -14,10 +14,7 @@ namespace DarkRift.PMF
 
         public static string RepositoryEndpoint { get; set; }
 
-        public static string GetPackageFolder()
-        {
-            return Path.Combine(Directory.GetCurrentDirectory(), PackageInstallationFolder);
-        }
+        public static Version CurrentSdkVersion { get; set; }
 
         public static string GetTemporaryFolder()
         {

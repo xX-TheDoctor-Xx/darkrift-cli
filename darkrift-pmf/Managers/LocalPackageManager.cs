@@ -19,25 +19,54 @@ namespace DarkRift.PMF.Managers
         /// Does all the checking locally when the program starts
         /// THIS NEEDS TO BE CALLED!
         /// </summary>
-        public static void Initialize()
+        public static void Start()
         {
-            var manifestPath = Path.Combine(Config.GetPackageFolder(), Config.ManifestFileName);
+            validateManifestFile();
+
             try
             {
-                var json = File.ReadAllText(manifestPath);
+                var json = File.ReadAllText(Config.ManifestFileName);
                 PackageList = JsonConvert.DeserializeObject<List<Package>>(json);
             }
             catch (FileNotFoundException)
             {
-
+                // Something failed with validateManifestFile()
             }
+        }
+
+        /// <summary>
+        /// Saves everything to disk
+        /// THIS NEEDS TO BE CALLED!
+        /// </summary>
+        public static void Stop()
+        {
+            validateManifestFile();
+
+            var json = JsonConvert.SerializeObject(PackageList);
+
+            try
+            {
+                File.WriteAllText(Config.ManifestFileName, json);
+            }
+            catch (IOException)
+            {
+                // Something failed with validateManifestFile()
+            }
+        }
+
+        private static void validateManifestFile()
+        {
+            if (!File.Exists(Config.ManifestFileName))
+                File.Create(Config.ManifestFileName);
+            if (PackageList == null)
+                PackageList = new List<Package>();
         }
 
         public static bool IsPackageInstalled(string id, out Package package, out string packageDirectory)
         {
             package = null;
 
-            packageDirectory = Path.Combine(Config.GetPackageFolder(), id);
+            packageDirectory = Path.Combine(Config.PackageInstallationFolder, id);
             if (!Directory.Exists(packageDirectory))
                 return false;
 
@@ -57,8 +86,15 @@ namespace DarkRift.PMF.Managers
             if (string.IsNullOrEmpty(id))
                 throw new InvalidOperationException();
 
-            string packageDirectory = Path.Combine(Config.GetPackageFolder(), id);
-            Directory.Delete(packageDirectory);
+            try
+            {
+                string packageDirectory = Path.Combine(Config.PackageInstallationFolder, id);
+                Directory.Delete(packageDirectory);
+            }
+            catch
+            {
+                // Do nothing, user probably already deleted the folder
+            }
 
             PackageList.Remove(id);
         }

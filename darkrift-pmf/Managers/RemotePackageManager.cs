@@ -66,7 +66,7 @@ namespace DarkRift.PMF.Managers
         /// <param name="package"></param>
         /// <param name="sdkVersion"></param>
         /// <returns>The latest asset version of a given package and given SDK version</returns>
-        public static Asset GetAssetLatestVersion(Package package, Version sdkVersion)
+        public static Asset GetAssetLatestVersionBySdkVersion(Package package)
         {
             if (package == null)
                 throw new ArgumentNullException();
@@ -76,7 +76,7 @@ namespace DarkRift.PMF.Managers
             Asset ret_asset = null;
             foreach (var asset in package.Assets)
             {
-                if (asset.SdkVersion == sdkVersion)
+                if (asset.SdkVersion == Config.CurrentSdkVersion)
                 {
                     if (ret_asset == null || ret_asset.Version < asset.Version)
                         ret_asset = asset;

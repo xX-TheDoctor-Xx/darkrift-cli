@@ -13,6 +13,10 @@
     <PackageReference Include="Crayon" Version="1.2.48" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\darkrift-pmf\darkrift-pmf.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);templates\**\*.*</DefaultItemExcludes>
   </PropertyGroup>

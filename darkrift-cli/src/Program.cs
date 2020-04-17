@@ -10,6 +10,8 @@ using System.Net;
 using CommandLine;
 using Crayon;
 using System.Collections.Generic;
+using DarkRift.PMF.Managers;
+using DarkRift.PMF;
 
 namespace DarkRift.Cli
 {
@@ -22,13 +24,14 @@ namespace DarkRift.Cli
 
         public static int Main(string[] args)
         {
-            return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, GetOptions, PullOptions, DocsOptions>(args)
+            return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, GetOptions, PullOptions, DocsOptions, PackageOptions>(args)
                 .MapResult(
                     (NewOptions opts) => New(opts),
                     (RunOptions opts) => Run(opts),
                     (GetOptions opts) => Get(opts),
                     (PullOptions opts) => Pull(opts),
                     (DocsOptions opts) => Docs(opts),
+                    (PackageOptions opts) => Packages(opts),
                     _ => 1);
         }
 
@@ -283,6 +286,98 @@ namespace DarkRift.Cli
             }
 
             return 0;
+        }
+
+        private static int Packages(PackageOptions opts)
+        {
+            Project project = Project.Load();
+
+            if (project.Runtime == null)
+            {
+                project.Runtime = new Runtime(VersionManager.GetLatestDarkRiftVersion(), ServerTier.Free, ServerPlatform.Framework);
+                project.Save();
+            }
+
+            Config.CurrentSdkVersion = project.Runtime.Version;
+            Config.ManifestFileName = "manifest.json";
+            Config.PackageInstallationFolder = ".packages";
+            Config.RepositoryEndpoint = "http://localhost:8080";
+
+            // this will always be necessary unless the option is update
+            if (string.IsNullOrEmpty(opts.PackageId) && !opts.Upgrade)
+            {
+                Console.Error.WriteLine(Output.Red($"No package was specified, use -p or --package"));
+                return 1;
+            }
+
+            // This is to make sure that only one option is selected when the command is executed
+            if ((opts.Install && (opts.Uninstall || opts.Update)) ||
+                (opts.Uninstall && (opts.Install || opts.Update)) ||
+                (opts.Update && (opts.Install || opts.Uninstall)) ||
+                (opts.Upgrade && (opts.Install || opts.Uninstall || opts.Update)))
+            {
+                Console.Error.WriteLine(Output.Red($"More than one option was selected, try \"darkrift help package\""));
+                return 1;
+            }
+
+            LocalPackageManager.Start();
+
+            // This is to make sure LocalPackageManager.Stop() is called at the end of the method
+            // This value is returned ater this method
+            int returnValue = 0;
+
+
+            if (opts.Install)
+            {
+                // If PackageVersion is null we just install the latest version for the sdk
+                if (opts.PackageVersion != null)
+                {
+                    // check if success
+                    PackageManager.InstallBySdkVersion(opts.PackageId);
+                }
+                else
+                {
+                    // check if success
+                    PackageManager.Install(opts.PackageId, opts.PackageVersion);
+                }
+            }
+            else if (opts.Uninstall)
+            {
+                // TODO: check if successfully uninstalled?
+                PackageManager.Uninstall(opts.PackageId);
+            }
+            else if (opts.Update)
+            {
+                // If PackageVersion is null we just install the latest version for the sdk
+                if (opts.PackageVersion != null)
+                {
+                    // check if success
+                    PackageManager.UpdateBySdkVersion(opts.PackageId);
+                }
+                else
+                {
+                    // check if success
+                    PackageManager.UpdateLatest(opts.PackageId);
+                }
+            }
+            else if (opts.Upgrade)
+            {
+                // If --cli is defined we upgrade our runtime
+                if (opts.UpgradeCli)
+                {
+                    // we just update all dlls in
+                    // System.Reflection.Assembly.GetEntryAssembly().Location;
+                    // this should do the trick
+                }
+                // If it is not defined it just updates all packages to the latest version of the sdk
+                else
+                {
+
+                }
+            }
+
+            LocalPackageManager.Stop();
+            return returnValue;
         }
     }
 }
