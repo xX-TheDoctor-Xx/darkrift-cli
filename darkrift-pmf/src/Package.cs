@@ -11,7 +11,8 @@ namespace DarkRift.PMF
     {
         public string ID { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))] // This converts enum to string and vice versa when generating or parsing json
+        // This converts enum to string and vice versa when generating or parsing json
+        [JsonConverter(typeof(StringEnumConverter))]
         public PackageType Type { get; set; }
 
         public string Name { get; set; }
@@ -20,7 +21,8 @@ namespace DarkRift.PMF
 
         public string Description { get; set; }
 
-        public List<Asset> Assets { get; set; } // If the package is a local one the list will only have one asset which is the version installed
+        // If the package is a local one the list will only have one asset which is the version installed
+        public List<Asset> Assets { get; set; }
 
         public Asset GetAssetVersion(Version version)
         {

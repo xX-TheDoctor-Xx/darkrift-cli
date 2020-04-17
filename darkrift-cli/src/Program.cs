@@ -24,6 +24,7 @@ namespace DarkRift.Cli
 
         public static int Main(string[] args)
         {
+            Project.Load();
             return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, GetOptions, PullOptions, DocsOptions, PackageOptions>(args)
                 .MapResult(
                     (NewOptions opts) => New(opts),
@@ -107,6 +108,12 @@ namespace DarkRift.Cli
             foreach (string path in Directory.GetFiles(targetDirectory, "*.*", SearchOption.AllDirectories))
                 FileTemplater.TemplateFileAndPath(path, Path.GetFileName(targetDirectory), version, opts.Pro ? ServerTier.Pro : ServerTier.Free, opts.Platform);
 
+            Project.Runtime.Platform = opts.Platform;
+            Project.Runtime.Tier = opts.Pro ? ServerTier.Pro : ServerTier.Free;
+            Project.Runtime.Version = version;
+
+            Project.Save(targetDirectory);
+
             Console.WriteLine(Output.Green($"Created '{Path.GetFileName(targetDirectory)}'"));
 
             return 0;
@@ -114,23 +121,21 @@ namespace DarkRift.Cli
 
         private static int Run(RunOptions opts)
         {
-            Project project = Project.Load();
-
-            // should this be here?
-            if (project.Runtime == null)
+            // its simply not a project
+            if (Project.IsCurrentDirectoryAProject())
             {
-                project.Runtime = new Runtime(VersionManager.GetLatestDarkRiftVersion(), ServerTier.Free, ServerPlatform.Framework);
-                project.Save();
+                Console.WriteLine(Output.Red($"The current folder is not a project"));
+                return 1;
             }
 
-            string path = VersionManager.GetInstallationPath(project.Runtime.Version, project.Runtime.Tier, project.Runtime.Platform);
+            string path = VersionManager.GetInstallationPath(Project.Runtime.Version, Project.Runtime.Tier, Project.Runtime.Platform);
             if (path == null)
                 return 1;
 
             // Calculate the executable file to run
             string fullPath;
             IEnumerable<string> args;
-            if (project.Runtime.Platform == ServerPlatform.Framework)
+            if (Project.Runtime.Platform == ServerPlatform.Framework)
             {
                 fullPath = Path.Combine(path, "DarkRift.Server.Console.exe");
                 args = opts.Values;
@@ -205,11 +210,9 @@ namespace DarkRift.Cli
                 // if version info was omitted, overwrite any parameters with current project settings
                 if (Project.IsCurrentDirectoryAProject())
                 {
-                    var project = Project.Load();
-
-                    opts.Version = project.Runtime.Version;
-                    opts.Platform = project.Runtime.Platform;
-                    opts.Tier = project.Runtime.Tier == ServerTier.Pro;
+                    opts.Version = Project.Runtime.Version;
+                    opts.Platform = Project.Runtime.Platform;
+                    opts.Tier = Project.Runtime.Tier == ServerTier.Pro;
                 }
                 else
                 {
@@ -266,9 +269,7 @@ namespace DarkRift.Cli
                 // If version info was omitted, overwrite any parameters with current project settings
                 if (Project.IsCurrentDirectoryAProject())
                 {
-                    var project = Project.Load();
-
-                    opts.Version = project.Runtime.Version;
+                    opts.Version = Project.Runtime.Version;
                 }
                 else
                 {
@@ -291,12 +292,11 @@ namespace DarkRift.Cli
 
         private static int Packages(PackageOptions opts)
         {
-            Project project = Project.Load();
-
-            if (project.Runtime == null)
+            // its simply not a project
+            if (Project.IsCurrentDirectoryAProject())
             {
-                project.Runtime = new Runtime(VersionManager.GetLatestDarkRiftVersion(), ServerTier.Free, ServerPlatform.Framework);
-                project.Save();
+                Console.WriteLine(Output.Red($"The current folder is not a project"));
+                return 1;
             }
 
             Config.CurrentSdkVersion = new Version("0.0.1");
