@@ -108,12 +108,10 @@ namespace DarkRift.PMF.Managers
         /// <param name="zipPath"></param>
         public static void InstallPackage(Package remotePackage, Asset asset, string zipPath, out Package package)
         {
-            var assetPath = Path.Combine(zipPath, remotePackage.ID);
-            ZipFile.ExtractToDirectory(assetPath, Path.Combine(Config.PackageInstallationFolder, remotePackage.ID));
-            File.Delete(assetPath);
+            ZipFile.ExtractToDirectory(Path.Combine(zipPath, asset.FileName), Path.Combine(Config.PackageInstallationFolder, remotePackage.ID));
 
-            foreach (var file in Directory.GetFiles(zipPath, "*.zip"))
-                ZipFile.ExtractToDirectory(file, Path.Combine(Config.PackageInstallationFolder, remotePackage.ID, "Dependencies"));
+            foreach (var dependency in asset.Dependencies)
+                ZipFile.ExtractToDirectory(Path.Combine(zipPath, dependency.FileName), Path.Combine(Config.PackageInstallationFolder, remotePackage.ID, "Dependencies", dependency.FileName));
 
             remotePackage.Assets.Clear();
             remotePackage.Assets.Add(asset);

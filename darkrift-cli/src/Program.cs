@@ -122,7 +122,7 @@ namespace DarkRift.Cli
         private static int Run(RunOptions opts)
         {
             // its simply not a project
-            if (Project.IsCurrentDirectoryAProject())
+            if (Project.Loaded)
             {
                 Console.WriteLine(Output.Red($"The current folder is not a project"));
                 return 1;
@@ -208,7 +208,7 @@ namespace DarkRift.Cli
             if (opts.Version == null)
             {
                 // if version info was omitted, overwrite any parameters with current project settings
-                if (Project.IsCurrentDirectoryAProject())
+                if (Project.Loaded)
                 {
                     opts.Version = Project.Runtime.Version;
                     opts.Platform = Project.Runtime.Platform;
@@ -267,7 +267,7 @@ namespace DarkRift.Cli
             if (opts.Version == null)
             {
                 // If version info was omitted, overwrite any parameters with current project settings
-                if (Project.IsCurrentDirectoryAProject())
+                if (Project.Loaded)
                 {
                     opts.Version = Project.Runtime.Version;
                 }
@@ -293,7 +293,7 @@ namespace DarkRift.Cli
         private static int Packages(PackageOptions opts)
         {
             // its simply not a project
-            if (Project.IsCurrentDirectoryAProject())
+            if (!Project.Loaded)
             {
                 Console.WriteLine(Output.Red($"The current folder is not a project"));
                 return 1;

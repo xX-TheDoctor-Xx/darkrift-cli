@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DarkRift.PMF;
+using Newtonsoft.Json;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -17,19 +18,22 @@ namespace DarkRift.Cli
         /// </summary>
         public static Runtime Runtime { get; set; }
 
+        public static bool Loaded { get; set; }
+
         /// <summary>
         /// Load's the project from disk.
         /// </summary>
         /// <returns>The project.</returns>
         public static void Load()
         {
-            if (IsCurrentDirectoryAProject())
+            if (File.Exists("project.json"))
             {
                 var project = JsonConvert.DeserializeObject<ProjectNotStatic>(File.ReadAllText("project.json"));
                 mapStaticClass(project);
+                Loaded = true;
             }
             else
-                Project.Runtime = new Runtime();
+                Runtime = new Runtime();
         }
 
         /// <summary>
@@ -39,16 +43,6 @@ namespace DarkRift.Cli
         {
             var text = JsonConvert.SerializeObject(mapNotStaticClass());
             File.WriteAllText(Path.Combine(path, "project.json"), text);
-        }
-
-        /// <summary>
-        /// Returns if the current directory is the directory where project is located
-        /// by checking existence of Project.xml file.
-        /// </summary>
-        /// <returns>Returns if the current directory is a project directory</returns>
-        public static bool IsCurrentDirectoryAProject()
-        {
-            return File.Exists("project.json");
         }
 
         private static void mapStaticClass(ProjectNotStatic pns)
