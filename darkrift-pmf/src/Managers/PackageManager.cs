@@ -13,6 +13,20 @@ namespace DarkRift.PMF.Managers
         /// <param name="id">The id of the package</param>
         /// <param name="version">The version of the asset</param>
         /// <returns>true Installation successful, false already installed</returns>
+        public static PackageState InstallPackage(Package package, Asset asset)
+        {
+            // If it is not installed, packageDirectory will have the value of the directory where the package should be
+            string zipFile = RemotePackageManager.DownloadAsset(package.ID, asset);
+            LocalPackageManager.InstallPackage(package, asset, zipFile, out package);
+            return PackageState.Installed;
+        }
+
+        /// <summary>
+        /// Installs a package given a version
+        /// </summary>
+        /// <param name="id">The id of the package</param>
+        /// <param name="version">The version of the asset</param>
+        /// <returns>true Installation successful, false already installed</returns>
         public static PackageState Install(string id, Version version, out Package package)
         {
             package = null;
@@ -32,9 +46,8 @@ namespace DarkRift.PMF.Managers
                     return PackageState.VersionNotFound;
 
                 // If it is not installed, packageDirectory will have the value of the directory where the package should be
-                string zipFile = RemotePackageManager.DownloadAsset(id, asset);
-                LocalPackageManager.InstallPackage(remotePackage, asset, zipFile, out package);
-                return PackageState.Installed;
+                package = remotePackage;
+                return InstallPackage(remotePackage, asset);
             }
             else
             {
@@ -51,6 +64,10 @@ namespace DarkRift.PMF.Managers
         {
             package = null;
 
+            // check if is already installed
+            if (LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string packageDirectory))
+                return PackageState.AlreadyInstalled;
+
             Package remotePackage = RemotePackageManager.GetPackageInfo(id);
 
             if (remotePackage == null)
@@ -63,10 +80,10 @@ namespace DarkRift.PMF.Managers
 
             if (validateSdkVersion(asset))
             {
-                return Install(id, asset.Version, out package);
+                // If it is not installed, packageDirectory will have the value of the directory where the package should be
+                package = remotePackage;
+                return InstallPackage(remotePackage, asset);
             }
-
-            return PackageState.Failed;
         }
 
         public static bool Uninstall(string id)
@@ -83,15 +100,16 @@ namespace DarkRift.PMF.Managers
         {
             package = null;
 
+            // check if is already installed
+            if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string packageDirectory))
+                return PackageState.NotInstalled;
+
             var remotePackage = RemotePackageManager.GetPackageInfo(id);
 
             if (remotePackage == null)
                 return PackageState.NotExisting;
 
             var asset = RemotePackageManager.GetAssetLatestVersion(remotePackage);
-
-            if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string pd))
-                return PackageState.NotInstalled;
 
             // You already have the latest version
             if (localPackage.Assets[0].Version == asset.Version)
@@ -100,7 +118,7 @@ namespace DarkRift.PMF.Managers
             if (validateSdkVersion(asset))
             {
                 Uninstall(id);
-                return Install(id, asset.Version, out package);
+                return InstallPackage(remotePackage, asset);
             }
 
             return PackageState.Cancelled;
@@ -132,7 +150,7 @@ namespace DarkRift.PMF.Managers
             if (dontAsk || validateSdkVersion(asset))
             {
                 Uninstall(id);
-                return InstallBySdkVersion(id, out package);
+                return InstallPackage(remotePackage, asset);
             }
 
             return PackageState.Cancelled;
