@@ -13,7 +13,7 @@ namespace DarkRift.PMF.Managers
         /// <param name="id">The id of the package</param>
         /// <param name="version">The version of the asset</param>
         /// <returns>true Installation successful, false already installed</returns>
-        public static bool Install(string id, Version version, out Package package)
+        public static PackageState Install(string id, Version version, out Package package)
         {
             package = null;
 
@@ -24,18 +24,21 @@ namespace DarkRift.PMF.Managers
                 Package remotePackage = RemotePackageManager.GetPackageInfo(id);
 
                 if (remotePackage == null)
-                    return false;
+                    return PackageState.NotExisting;
                 
                 Asset asset = remotePackage.GetAssetVersion(version);
+
+                if (asset == null)
+                    return PackageState.VersionNotFound;
 
                 // If it is not installed, packageDirectory will have the value of the directory where the package should be
                 string zipFile = RemotePackageManager.DownloadAsset(id, asset);
                 LocalPackageManager.InstallPackage(remotePackage, asset, zipFile, out package);
-                return true;
+                return PackageState.Installed;
             }
             else
             {
-                return false;
+                return PackageState.AlreadyInstalled;
             }
         }
 
@@ -44,29 +47,26 @@ namespace DarkRift.PMF.Managers
         /// </summary>
         /// <param name="id"></param>
         /// <returns>true update succes, false update failed or cancelled</returns>
-        public static bool InstallBySdkVersion(string id, out Package package)
+        public static PackageState InstallBySdkVersion(string id, out Package package)
         {
             package = null;
 
             Package remotePackage = RemotePackageManager.GetPackageInfo(id);
 
             if (remotePackage == null)
-                return false;
+                return PackageState.NotExisting;
 
             Asset asset = RemotePackageManager.GetAssetLatestVersionBySdkVersion(remotePackage);
 
             if (asset == null)
-            {
-                Console.WriteLine($"Asset with SDK Version - {Config.CurrentSdkVersion} - was not found");
-                return false;
-            }
+                return PackageState.VersionNotFound;
 
             if (validateSdkVersion(asset))
             {
                 return Install(id, asset.Version, out package);
             }
 
-            return false;
+            return PackageState.Failed;
         }
 
         public static bool Uninstall(string id)
@@ -75,52 +75,67 @@ namespace DarkRift.PMF.Managers
         }
 
         /// <summary>
-        /// Updates a package to the most recent version given an sdk version
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>true if update success, false if package is not installed</returns>
-        public static bool UpdateBySdkVersion(string id, out Package package)
-        {
-            package = null;
-
-            // normal update
-            if (Uninstall(id))
-                return InstallBySdkVersion(id, out package);
-
-            return false;
-        }
-
-        /// <summary>
         /// Updates a package to the most recent version regardless of sdk version
         /// </summary>
         /// <param name="id"></param>
         /// <returns>true update succes, false update failed or cancelled</returns>
-        public static bool UpdateLatest(string id, out Package package)
+        public static PackageState UpdateLatest(string id, out Package package)
         {
             package = null;
-
-            if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string pd))
-                return false;
-
-            Uninstall(id);
 
             var remotePackage = RemotePackageManager.GetPackageInfo(id);
 
             if (remotePackage == null)
-                return false;
+                return PackageState.NotExisting;
 
             var asset = RemotePackageManager.GetAssetLatestVersion(remotePackage);
 
+            if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string pd))
+                return PackageState.NotInstalled;
+
             // You already have the latest version
             if (localPackage.Assets[0].Version == asset.Version)
-                return false;
+                return PackageState.UpToDate;
 
             if (validateSdkVersion(asset))
             {
+                Uninstall(id);
                 return Install(id, asset.Version, out package);
             }
 
-            return false;
+            return PackageState.Cancelled;
+        }
+
+        /// <summary>
+        /// Updates a package to the most recent version given an sdk version
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>true if update success, false if package is not installed</returns>
+        public static PackageState UpdateBySdkVersion(string id, out Package package)
+        {
+            package = null;
+
+            if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string pd))
+                return PackageState.NotInstalled;
+
+            var remotePackage = RemotePackageManager.GetPackageInfo(id);
+
+            if (remotePackage == null)
+                return PackageState.NotExisting;
+
+            var asset = RemotePackageManager.GetAssetLatestVersionBySdkVersion(remotePackage);
+
+            // You already have the latest version
+            if (localPackage.Assets[0].Version == asset.Version)
+                return PackageState.UpToDate;
+
+            if (validateSdkVersion(asset))
+            {
+                Uninstall(id);
+                return InstallBySdkVersion(id, out package);
+            }
+
+            return PackageState.Cancelled;
         }
 
         private static bool validateSdkVersion(Asset asset)
