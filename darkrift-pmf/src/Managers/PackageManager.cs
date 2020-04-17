@@ -15,15 +15,19 @@ namespace DarkRift.PMF.Managers
         /// <returns>true Installation successful, false already installed</returns>
         public static bool Install(string id, Version version)
         {
-            // get package info for version
-            Package remotePackage = RemotePackageManager.GetPackageInfo(id);
-            Asset asset = remotePackage.GetAssetVersion(version);
-
             // check if is already installed
             if (!LocalPackageManager.IsPackageInstalled(id, out Package localPackage, out string packageDirectory))
             {
+                // get package info for version
+                Package remotePackage = RemotePackageManager.GetPackageInfo(id);
+
+                if (remotePackage == null)
+                    return false;
+
+                Asset asset = remotePackage.GetAssetVersion(version);
+
                 // If it is not installed, packageDirectory will have the value of the directory where the package should be
-                string zipFile = RemotePackageManager.DownloadAsset(asset);
+                string zipFile = RemotePackageManager.DownloadAsset(id, asset);
                 LocalPackageManager.InstallPackage(remotePackage, asset, zipFile);
                 return true;
             }
@@ -41,7 +45,17 @@ namespace DarkRift.PMF.Managers
         public static bool InstallBySdkVersion(string id)
         {
             Package remotePackage = RemotePackageManager.GetPackageInfo(id);
+
+            if (remotePackage == null)
+                return false;
+
             Asset asset = RemotePackageManager.GetAssetLatestVersionBySdkVersion(remotePackage);
+
+            if (asset == null)
+            {
+                Console.WriteLine($"Asset with SDK Version - {Config.CurrentSdkVersion} - was not found");
+                return false;
+            }
 
             if (validateSdkVersion(asset))
             {
@@ -56,7 +70,7 @@ namespace DarkRift.PMF.Managers
             if (LocalPackageManager.IsPackageInstalled(id, out Package package, out string packageDirectory))
                 LocalPackageManager.RemovePackage(id);
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -83,6 +97,10 @@ namespace DarkRift.PMF.Managers
             Uninstall(id);
 
             var remotePackage = RemotePackageManager.GetPackageInfo(id);
+
+            if (remotePackage == null)
+                return false;
+
             var asset = RemotePackageManager.GetAssetLatestVersion(remotePackage);
 
             if (validateSdkVersion(asset))
@@ -96,15 +114,28 @@ namespace DarkRift.PMF.Managers
         private static bool validateSdkVersion(Asset asset)
         {
             if (asset.SdkVersion > Config.CurrentSdkVersion)
-            {
-
-            }
+                return askUser("You are installing a package which the sdk version is more recent than what you have. Would you like to continue?");
             else if (asset.SdkVersion < Config.CurrentSdkVersion)
-            {
-
-            }
+                return askUser("You are installing a package which the sdk version is older than what you have. Would you like to continue?");
 
             return true;
+        }
+
+        /// <summary>
+        /// Just asks the user something
+        /// </summary>
+        /// <returns>true yes, false no</returns>
+        private static bool askUser(string question)
+        {
+            Console.WriteLine($"{question} [Y][N]");
+            while (true)
+            {
+                char answer = char.ToLower(Console.ReadKey().KeyChar);
+                if (answer == 'n')
+                    return false;
+                else if (answer == 'y')
+                    return false;
+            }
         }
     }
 }

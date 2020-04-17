@@ -5,4 +5,5 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~M:DarkRift.PMF.Managers.LocalPackageManager.createManifestFile")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles")]
+[assembly: SuppressMessage("Style", "IDE0063:Use simple 'using' statement")]

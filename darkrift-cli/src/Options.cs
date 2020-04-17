@@ -100,10 +100,10 @@ namespace DarkRift.Cli
         [Option("cli", Default = false)]
         public bool UpgradeCli{ get; set; }
 
-        [Option('p', "package", Default = false)]
+        [Option('p', "package")]
         public string PackageId { get; set; }
 
-        [Option('v', "version", Default = false)]
+        [Option('v', "version")]
         public Version PackageVersion { get; set; }
     }
 }

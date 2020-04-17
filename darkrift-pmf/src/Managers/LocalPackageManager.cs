@@ -47,6 +47,7 @@ namespace DarkRift.PMF.Managers
             try
             {
                 File.WriteAllText(Config.ManifestFileName, json);
+                Directory.Delete(Config.TemporaryFolder, true);
             }
             catch (IOException)
             {
@@ -57,7 +58,7 @@ namespace DarkRift.PMF.Managers
         private static void validateManifestFile()
         {
             if (!File.Exists(Config.ManifestFileName))
-                File.Create(Config.ManifestFileName);
+                File.Create(Config.ManifestFileName).Close();
             if (PackageList == null)
                 PackageList = new List<Package>();
         }
@@ -89,7 +90,7 @@ namespace DarkRift.PMF.Managers
             try
             {
                 string packageDirectory = Path.Combine(Config.PackageInstallationFolder, id);
-                Directory.Delete(packageDirectory);
+                Directory.Delete(packageDirectory, true);
             }
             catch
             {
@@ -107,8 +108,7 @@ namespace DarkRift.PMF.Managers
         /// <param name="zipPath"></param>
         public static void InstallPackage(Package remotePackage, Asset asset, string zipPath)
         {
-            string packageDirectory = Path.Combine(Directory.GetCurrentDirectory(), remotePackage.ID);
-
+            string packageDirectory = Path.Combine(Config.PackageInstallationFolder, remotePackage.ID);
             ZipFile.ExtractToDirectory(zipPath, packageDirectory);
 
             remotePackage.Assets.Clear();

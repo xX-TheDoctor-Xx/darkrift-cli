@@ -16,10 +16,18 @@ namespace DarkRift.PMF.Managers
         /// <returns>The package object downloaded</returns>
         public static Package GetPackageInfo(string id)
         {
-            using (WebClient client = new WebClient())
+            try
             {
-                string json = client.DownloadString($"{Config.RepositoryEndpoint}/{id}");
-                return JsonConvert.DeserializeObject<Package>(json);
+                using (WebClient client = new WebClient())
+                {
+                    string json = client.DownloadString($"{Config.RepositoryEndpoint}/{id}");
+                    return JsonConvert.DeserializeObject<Package>(json);
+                }
+            }
+            catch (WebException)
+            {
+                Console.WriteLine("Couldn't download information from the server");
+                return null;
             }
         }
 
@@ -28,11 +36,13 @@ namespace DarkRift.PMF.Managers
         /// </summary>
         /// <param name="asset"></param>
         /// <returns>The zip file which was downloaded</returns>
-        public static string DownloadAsset(Asset asset)
+        public static string DownloadAsset(string id, Asset asset)
         {
             using (WebClient client = new WebClient())
             {
-                var zipPath = Path.Combine(Config.GetTemporaryFolder(), asset.FileName);
+                var zipPath = Path.Combine(Config.TemporaryFolder, id);
+                Directory.CreateDirectory(zipPath);
+                zipPath = Path.Combine(zipPath, asset.FileName);
                 client.DownloadFile(asset.Url, zipPath);
                 return zipPath;
             }

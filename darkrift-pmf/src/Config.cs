@@ -16,9 +16,13 @@ namespace DarkRift.PMF
 
         public static Version CurrentSdkVersion { get; set; }
 
-        public static string GetTemporaryFolder()
+        public static bool IsDebugging { get; set; }
+
+        public static string TemporaryFolder = ".pmf-temp";
+
+        public static void DEBUG(string message)
         {
-            return Path.Combine(Path.GetTempPath(), ".pmf");
+            Console.WriteLine("DEBUG: " + message);
         }
     }
 }

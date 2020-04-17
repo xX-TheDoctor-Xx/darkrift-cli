@@ -116,6 +116,7 @@ namespace DarkRift.Cli
         {
             Project project = Project.Load();
 
+            // should this be here?
             if (project.Runtime == null)
             {
                 project.Runtime = new Runtime(VersionManager.GetLatestDarkRiftVersion(), ServerTier.Free, ServerPlatform.Framework);
@@ -298,17 +299,11 @@ namespace DarkRift.Cli
                 project.Save();
             }
 
-            Config.CurrentSdkVersion = project.Runtime.Version;
+            Config.CurrentSdkVersion = new Version("0.0.1");
             Config.ManifestFileName = "manifest.json";
             Config.PackageInstallationFolder = ".packages";
-            Config.RepositoryEndpoint = "http://localhost:8080";
-
-            // this will always be necessary unless the option is update
-            if (string.IsNullOrEmpty(opts.PackageId) && !opts.Upgrade)
-            {
-                Console.Error.WriteLine(Output.Red($"No package was specified, use -p or --package"));
-                return 1;
-            }
+            Config.RepositoryEndpoint = "http://localhost:3000/package";
+            Config.IsDebugging = true;
 
             // This is to make sure that only one option is selected when the command is executed
             if ((opts.Install && (opts.Uninstall || opts.Update)) ||
@@ -317,6 +312,18 @@ namespace DarkRift.Cli
                 (opts.Upgrade && (opts.Install || opts.Uninstall || opts.Update)))
             {
                 Console.Error.WriteLine(Output.Red($"More than one option was selected, try \"darkrift help package\""));
+                return 1;
+            }
+            else if (!(opts.Install || opts.Uninstall || opts.Update || opts.Upgrade))
+            {
+                Console.Error.WriteLine(Output.Red($"No option was selected, try \"darkrift help package\""));
+                return 1;
+            }
+
+            // this will always be necessary unless the option is update
+            if (string.IsNullOrEmpty(opts.PackageId) && !opts.Upgrade)
+            {
+                Console.Error.WriteLine(Output.Red($"No package was specified, use -p or --package"));
                 return 1;
             }
 
@@ -329,17 +336,18 @@ namespace DarkRift.Cli
 
             if (opts.Install)
             {
+                bool success = false;
+
                 // If PackageVersion is null we just install the latest version for the sdk
                 if (opts.PackageVersion != null)
-                {
-                    // check if success
-                    PackageManager.InstallBySdkVersion(opts.PackageId);
-                }
+                    success = PackageManager.Install(opts.PackageId, opts.PackageVersion);
                 else
-                {
-                    // check if success
-                    PackageManager.Install(opts.PackageId, opts.PackageVersion);
-                }
+                    success = PackageManager.InstallBySdkVersion(opts.PackageId);
+
+                if (success)
+                    Console.WriteLine(Output.Green($"{opts.PackageId} version {opts.PackageVersion} was installed successfully"));
+                else
+                    Console.WriteLine($"{opts.PackageId} is already install to update use -u");
             }
             else if (opts.Uninstall)
             {
@@ -352,12 +360,12 @@ namespace DarkRift.Cli
                 if (opts.PackageVersion != null)
                 {
                     // check if success
-                    PackageManager.UpdateBySdkVersion(opts.PackageId);
+                    PackageManager.UpdateLatest(opts.PackageId);
                 }
                 else
                 {
                     // check if success
-                    PackageManager.UpdateLatest(opts.PackageId);
+                    PackageManager.UpdateBySdkVersion(opts.PackageId);
                 }
             }
             else if (opts.Upgrade)

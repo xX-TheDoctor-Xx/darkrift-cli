@@ -14,10 +14,13 @@ namespace DarkRift.PMF
         /// <param name="id"></param>
         public static void Remove(this List<Package> list, string id)
         {
-            foreach (var package in list)
+            for (int i = 0; i < list.Count; i++)
             {
-                if (package.ID == id)
-                    list.Remove(package);
+                if (list[i].ID == id)
+                {
+                    list.RemoveAt(i);
+                    break;
+                }
             }
         }
 
