@@ -25,11 +25,10 @@ namespace DarkRift.Cli
         public static int Main(string[] args)
         {
             Project.Load();
-            return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, GetOptions, PullOptions, DocsOptions, PackageOptions>(args)
+            return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, PullOptions, DocsOptions, PackageOptions>(args)
                 .MapResult(
                     (NewOptions opts) => New(opts),
                     (RunOptions opts) => Run(opts),
-                    (GetOptions opts) => Get(opts),
                     (PullOptions opts) => Pull(opts),
                     (DocsOptions opts) => Docs(opts),
                     (PackageOptions opts) => Packages(opts),
@@ -44,6 +43,8 @@ namespace DarkRift.Cli
         {
             // Default
             settings.HelpWriter = Console.Error;
+
+            settings.CaseInsensitiveEnumValues = true;
 
             // Added for 'run' command
             settings.EnableDashDash = true;
@@ -153,39 +154,6 @@ namespace DarkRift.Cli
             }
         }
 
-        private static int Get(GetOptions opts)
-        {
-            if (!Uri.TryCreate(opts.Url, UriKind.RelativeOrAbsolute, out Uri uri))
-            {
-                Console.Error.WriteLine(Output.Red("Invalid URL passed."));
-                Console.Error.WriteLine("\t" + Environment.GetCommandLineArgs()[0] + " " + CommandLine.Parser.Default.FormatCommandLine(new GetOptions { Url = "https://your-download-url/file.zip" }));
-                return 1;
-            }
-
-            string stagingDirectory = Path.Combine(".", ".darkrift", "temp");
-            string stagingPath = Path.Combine(stagingDirectory, "Download.zip");
-            Directory.CreateDirectory(stagingDirectory);
-
-            Console.WriteLine($"Downloading package...");
-
-            using (WebClient myWebClient = new WebClient())
-            {
-                myWebClient.DownloadFile(uri, stagingPath);
-            }
-
-            Console.WriteLine($"Extracting package...");
-
-            // TODO find a better place for this
-            string targetDirectory = Path.Combine(".", "plugins");
-            Directory.CreateDirectory(targetDirectory);
-
-            ZipFile.ExtractToDirectory(stagingPath, targetDirectory, true);
-
-            Console.WriteLine(Output.Green($"Sucessfully downloaded package into plugins directory."));
-
-            return 0;
-        }
-
         private static int Pull(PullOptions opts)
         {
             // If --list was specified, list installed versions and tell if documentation for that version is available locally
@@ -257,7 +225,7 @@ namespace DarkRift.Cli
 
         private static int Docs(DocsOptions opts)
         {
-            // If version provided is "latest", it is being replaced with currently most recent one
+            // If "latest" option is provided we use the most recent version
             if (opts.Latest)
             {
                 opts.Version = VersionManager.GetLatestDarkRiftVersion();
@@ -265,7 +233,7 @@ namespace DarkRift.Cli
 
             if (opts.Version == null)
             {
-                // If version info was omitted, overwrite any parameters with current project settings
+                // If version info was omitted, overwrite version with current project settings
                 if (Project.Loaded)
                 {
                     opts.Version = Project.Runtime.Version;
@@ -292,12 +260,192 @@ namespace DarkRift.Cli
             return 0;
         }
 
+        #region Package Management
+
+        private static int Install(PackageOptions opts)
+        {
+            PackageState state;
+
+            // If PackageVersion is null we just install the latest version for the sdk
+            if (opts.PackageVersion != null)
+                state = PackageManager.Install(opts.PackageId, opts.PackageVersion, out Package package);
+            else
+                state = PackageManager.InstallBySdkVersion(opts.PackageId, out Package package);
+
+            if (state == PackageState.Installed)
+            {
+                Console.WriteLine(Output.Green($"{opts.PackageId} version {opts.PackageVersion} was installed successfully"));
+                return 0;
+            }
+            else if (state == PackageState.AlreadyInstalled)
+            {
+                Console.WriteLine($"{opts.PackageId} is already installed");
+                return 0;
+            }
+            else if (state == PackageState.NotExisting)
+            {
+                Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
+            }
+            else if (state == PackageState.VersionNotFound)
+            {
+                Console.Error.WriteLine($"Couldn't find {opts.PackageId} with SDK version {Config.CurrentSdkVersion}");
+            }
+            else // PackageState.Failed
+            {
+                Console.Error.WriteLine(Output.Red($"Something went wrong"));
+            }
+
+            return 1;
+        }
+
+        private static int Uninstall(PackageOptions opts)
+        {
+            // if true uninstall success, if false, package was not even installed
+            if (PackageManager.Uninstall(opts.PackageId))
+            {
+                Console.WriteLine(Output.Green($"{opts.PackageId} was uninstalled succesfully"));
+                return 0;
+            }
+            else
+            {
+                Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
+                return 1;
+            }
+        }
+
+        private static int UpdatePackage(PackageOptions opts)
+        {
+            // If PackageVersion is null we just install the latest version for the sdk
+            if (opts.PackageVersion != null)
+            {
+                PackageState state = PackageManager.UpdateLatest(opts.PackageId, out Package package);
+                // check if success
+                if (state == PackageState.Installed)
+                {
+                    Console.WriteLine($"Package {opts.PackageId} was updated to version {opts.PackageVersion}");
+                    return 0;
+                }
+                else if (state == PackageState.NotInstalled)
+                {
+                    Console.Error.WriteLine($"Package {opts.PackageId} is not installed");
+                }
+                else if (state == PackageState.NotExisting)
+                {
+                    Console.Error.WriteLine($"Package {opts.PackageId} doesn't exist");
+                }
+                else if (state == PackageState.UpToDate)
+                {
+                    Console.WriteLine($"Package {opts.PackageId} is up to date");
+                }
+                else if (state == PackageState.Cancelled)
+                {
+                    return 0;
+                }
+                else // PackageState.Failed
+                {
+                    Console.Error.WriteLine(Output.Red($"Something went wrong"));
+                }
+            }
+            else
+            {
+                PackageState state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package);
+                // check if success
+                if (state == PackageState.Installed)
+                {
+                    Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
+                    return 0;
+                }
+                else if (state == PackageState.NotExisting)
+                {
+                    Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
+                }
+                else if (state == PackageState.VersionNotFound)
+                {
+                    Console.Error.WriteLine($"Couldn't find {opts.PackageId} with SDK version {Config.CurrentSdkVersion}");
+                }
+                else if (state == PackageState.UpToDate)
+                {
+                    Console.WriteLine($"Package {opts.PackageId} is already up to date");
+                    return 0;
+                }
+                else if (state == PackageState.Cancelled)
+                {
+                    return 0;
+                }
+                else // PackageState.Failed
+                {
+                    Console.Error.WriteLine(Output.Red($"Something went wrong"));
+                }
+            }
+
+            return 1;
+        }
+
+        private static int UpdatePackagesOrCli(PackageOptions opts)
+        {
+            // If --cli is defined we upgrade our runtime
+            if (opts.UpgradeCli)
+            {
+                string myPath = Directory.GetDirectoryRoot(Assembly.GetEntryAssembly().Location);
+
+                // i have no idea how i should do this
+            }
+            // If it is not defined it just updates all packages to the latest version of the sdk
+            else
+            {
+                foreach (Package package in LocalPackageManager.PackageList)
+                {
+                    PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p, true);
+                    // check if success
+                    if (state == PackageState.Installed)
+                    {
+                        Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
+                        return 0;
+                    }
+                    else if (state == PackageState.UpToDate)
+                    {
+                        Console.WriteLine($"Package {opts.PackageId} is already up to date");
+                        return 0;
+                    }
+                    else // PackageState.Failed
+                    {
+                        Console.WriteLine(Output.Red($"Something went wrong"));
+                    }
+                }
+            }
+
+            return 1;
+        }
+
+        private static int Update(PackageOptions opts)
+        {
+            // if we have a package id we update that package
+            // if we dont we just update them all or the cli if option is specified
+            return !string.IsNullOrEmpty(opts.PackageId) ? UpdatePackage(opts) : UpdatePackagesOrCli(opts);
+        }
+
         private static int Packages(PackageOptions opts)
         {
+            if (!string.IsNullOrEmpty(opts.PackageId) && opts.PackageId.Contains('@'))
+            {
+                string[] arr = opts.PackageId.Split('@');
+                opts.PackageId = arr[0];
+
+                try
+                {
+                    opts.PackageVersion = new Version(arr[1]);
+                }
+                catch
+                {
+                    Console.Error.WriteLine(Output.Red("Invalid version format"));
+                    return 1;
+                }
+            }
+            
             // its simply not a project
             if (!Project.Loaded)
             {
-                Console.WriteLine(Output.Red($"The current folder is not a project"));
+                Console.Error.WriteLine(Output.Red("The current folder is not a project"));
                 return 1;
             }
 
@@ -307,25 +455,10 @@ namespace DarkRift.Cli
             Config.RepositoryEndpoint = "http://localhost:3000/package";
             Config.IsDebugging = true;
 
-            // This is to make sure that only one option is selected when the command is executed
-            if ((opts.Install && (opts.Uninstall || opts.Update)) ||
-                (opts.Uninstall && (opts.Install || opts.Update)) ||
-                (opts.Update && (opts.Install || opts.Uninstall)) ||
-                (opts.Upgrade && (opts.Install || opts.Uninstall || opts.Update)))
-            {
-                Console.Error.WriteLine(Output.Red($"More than one option was selected, try \"darkrift help package\""));
-                return 1;
-            }
-            else if (!(opts.Install || opts.Uninstall || opts.Update || opts.Upgrade))
-            {
-                Console.Error.WriteLine(Output.Red($"No option was selected, try \"darkrift help package\""));
-                return 1;
-            }
-
             // this will always be necessary unless the option is update
-            if (string.IsNullOrEmpty(opts.PackageId) && !opts.Upgrade)
+            if (string.IsNullOrEmpty(opts.PackageId) && opts.PackageOperation != PackageOperation.Update)
             {
-                Console.Error.WriteLine(Output.Red($"No package was specified, use -p or --package"));
+                Console.Error.WriteLine($"No package was specified, use -p or --package");
                 return 1;
             }
 
@@ -335,144 +468,23 @@ namespace DarkRift.Cli
             // This value is returned ater this method
             int returnValue = 0;
 
-
-            if (opts.Install)
+            if (opts.PackageOperation == PackageOperation.Install)
             {
-                PackageState state;
-
-                // If PackageVersion is null we just install the latest version for the sdk
-                if (opts.PackageVersion != null)
-                    state = PackageManager.Install(opts.PackageId, opts.PackageVersion, out Package package);
-                else
-                    state = PackageManager.InstallBySdkVersion(opts.PackageId, out Package package);
-
-                if (state == PackageState.Installed)
-                {
-                    Console.WriteLine(Output.Green($"{opts.PackageId} version {opts.PackageVersion} was installed successfully"));
-                }
-                else if (state == PackageState.AlreadyInstalled)
-                {
-                    Console.WriteLine($"{opts.PackageId} is already install to update use -u");
-                }
-                else if (state == PackageState.NotExisting)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} doesn't exist");
-                }
-                else if (state == PackageState.VersionNotFound)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} with SDK version {Config.CurrentSdkVersion} doesn't exist");
-                }
-                else // PackageState.Failed
-                {
-                    Console.WriteLine(Output.Red($"Something went wrong"));
-                }
+                returnValue = Install(opts);
             }
-            else if (opts.Uninstall)
+            else if (opts.PackageOperation == PackageOperation.Uninstall)
             {
-                // if true uninstall success, if false, package was not even installed
-                if (PackageManager.Uninstall(opts.PackageId))
-                {
-                    Console.WriteLine(Output.Green($"{opts.PackageId} was uninstalled succesfully"));
-                }
-                else
-                {
-                    Console.WriteLine(Output.Red($"{opts.PackageId} is not installed"));
-                }
+                returnValue = Uninstall(opts);
             }
-            else if (opts.Update)
+            else if (opts.PackageOperation == PackageOperation.Update)
             {
-                // If PackageVersion is null we just install the latest version for the sdk
-                if (opts.PackageVersion != null)
-                {
-                    PackageState state = PackageManager.UpdateLatest(opts.PackageId, out Package package);
-                    // check if success
-                    if (state == PackageState.Installed)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} was updated to version {opts.PackageVersion}");
-                    }
-                    else if (state == PackageState.NotInstalled)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} is not install, so it can't be updated");
-                    }
-                    else if (state == PackageState.NotExisting)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} doesn't exist");
-                    }
-                    else if (state == PackageState.UpToDate)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} is up to date");
-                    }
-                    else if (state == PackageState.Cancelled)
-                    {
-                    }
-                    else // PackageState.Failed
-                    {
-                        Console.WriteLine(Output.Red($"Something went wrong"));
-                    }
-                }
-                else
-                {
-                    PackageState state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package, false);
-                    // check if success
-                    if (state == PackageState.Installed)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
-                    }
-                    else if (state == PackageState.NotExisting)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} doesn't exist");
-                    }
-                    else if (state == PackageState.VersionNotFound)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} with SDK version {Config.CurrentSdkVersion} doesn't exist");
-                    }
-                    else if (state == PackageState.UpToDate)
-                    {
-                        Console.WriteLine($"Package {opts.PackageId} is up to date");
-                    }
-                    else if (state == PackageState.Cancelled)
-                    {
-                    }
-                    else // PackageState.Failed
-                    {
-                        Console.WriteLine(Output.Red($"Something went wrong"));
-                    }
-                }
-            }
-            else if (opts.Upgrade)
-            {
-                // If --cli is defined we upgrade our runtime
-                if (opts.UpgradeCli)
-                {
-                    string myPath = Directory.GetDirectoryRoot(Assembly.GetEntryAssembly().Location);
-
-                    // i have no idea how i should do this
-                }
-                // If it is not defined it just updates all packages to the latest version of the sdk
-                else
-                {
-                    foreach (Package package in LocalPackageManager.PackageList)
-                    {
-                        PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p, true);
-                        // check if success
-                        if (state == PackageState.Installed)
-                        {
-                            Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
-                        }
-                        else if (state == PackageState.UpToDate)
-                        {
-                            Console.WriteLine($"Package {opts.PackageId} is up to date");
-                        }
-                        else // PackageState.Failed
-                        {
-                            Console.WriteLine(Output.Red($"Something went wrong updating {package.ID}"));
-                        }
-                    }
-                }
+                returnValue = Update(opts);
             }
 
             LocalPackageManager.Stop();
             return returnValue;
         }
+
+        #endregion
     }
 }
