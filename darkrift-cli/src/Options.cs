@@ -78,32 +78,4 @@ namespace DarkRift.Cli
         [Option("latest", Default = false, HelpText = "Specifies latest version")]
         public bool Latest { get; set; }
     }
-
-    [Verb("package", HelpText = "Manages packages in a given project.")]
-    public class PackageOptions
-    {
-        [Option('f', "force", Default = false)]
-        public bool Force { get; set; }
-
-        [Option('i', "install", Default = false)]
-        public bool Install { get; set; }
-
-        [Option('u', "update", Default = false)]
-        public bool Update { get; set; }
-
-        [Option('r', "remove", Default = false)]
-        public bool Uninstall { get; set; }
-
-        [Option("upgrade", Default = false)]
-        public bool Upgrade { get; set; }
-
-        [Option("cli", Default = false)]
-        public bool UpgradeCli{ get; set; }
-
-        [Option('p', "package")]
-        public string PackageId { get; set; }
-
-        [Option('v', "version")]
-        public Version PackageVersion { get; set; }
-    }
 }
