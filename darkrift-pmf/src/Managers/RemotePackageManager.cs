@@ -42,8 +42,9 @@ namespace DarkRift.PMF.Managers
             {
                 var zipPath = Path.Combine(Config.TemporaryFolder, id);
                 Directory.CreateDirectory(zipPath);
-                zipPath = Path.Combine(zipPath, asset.FileName);
-                client.DownloadFile(asset.Url, zipPath);
+                client.DownloadFile(asset.Url, Path.Combine(zipPath, asset.FileName));
+                foreach (var dependency in asset.Dependencies)
+                    client.DownloadFile(dependency.Url, Path.Combine(zipPath, dependency.FileName));
                 return zipPath;
             }
         }
