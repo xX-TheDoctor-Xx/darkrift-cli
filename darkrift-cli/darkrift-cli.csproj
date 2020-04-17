@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\darkrift-pmf\darkrift-pmf.csproj" />
+    <ProjectReference Include="..\PMF\PMF\PMF.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
