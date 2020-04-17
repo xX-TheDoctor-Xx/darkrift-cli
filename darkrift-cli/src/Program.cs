@@ -340,9 +340,9 @@ namespace DarkRift.Cli
 
                 // If PackageVersion is null we just install the latest version for the sdk
                 if (opts.PackageVersion != null)
-                    success = PackageManager.Install(opts.PackageId, opts.PackageVersion);
+                    success = PackageManager.Install(opts.PackageId, opts.PackageVersion, out Package package);
                 else
-                    success = PackageManager.InstallBySdkVersion(opts.PackageId);
+                    success = PackageManager.InstallBySdkVersion(opts.PackageId, out Package package);
 
                 if (success)
                     Console.WriteLine(Output.Green($"{opts.PackageId} version {opts.PackageVersion} was installed successfully"));
@@ -351,8 +351,15 @@ namespace DarkRift.Cli
             }
             else if (opts.Uninstall)
             {
-                // TODO: check if successfully uninstalled?
-                PackageManager.Uninstall(opts.PackageId);
+                // if true uninstall success, if false, package was not even installed
+                if (PackageManager.Uninstall(opts.PackageId))
+                {
+                    Console.WriteLine(Output.Green($"{opts.PackageId} was uninstalled succesfully"));
+                }
+                else
+                {
+                    Console.WriteLine(Output.Red($"{opts.PackageId} is not installed"));
+                }
             }
             else if (opts.Update)
             {
@@ -360,12 +367,26 @@ namespace DarkRift.Cli
                 if (opts.PackageVersion != null)
                 {
                     // check if success
-                    PackageManager.UpdateLatest(opts.PackageId);
+                    if (PackageManager.UpdateLatest(opts.PackageId, out Package package))
+                    {
+                        Console.WriteLine($"Package {opts.PackageId} was updated to version {opts.PackageVersion}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Package {opts.PackageId} is not install, so it can't be updated");
+                    }
                 }
                 else
                 {
                     // check if success
-                    PackageManager.UpdateBySdkVersion(opts.PackageId);
+                    if (PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package))
+                    {
+                        Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("no2");
+                    }
                 }
             }
             else if (opts.Upgrade)

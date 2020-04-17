@@ -82,10 +82,10 @@ namespace DarkRift.PMF.Managers
             }
         }
 
-        public static void RemovePackage(string id)
+        public static bool RemovePackage(string id)
         {
             if (string.IsNullOrEmpty(id))
-                throw new InvalidOperationException();
+                throw new ArgumentNullException();
 
             try
             {
@@ -97,7 +97,7 @@ namespace DarkRift.PMF.Managers
                 // Do nothing, user probably already deleted the folder
             }
 
-            PackageList.Remove(id);
+            return PackageList.Remove(id);
         }
 
         /// <summary>
@@ -106,13 +106,15 @@ namespace DarkRift.PMF.Managers
         /// <param name="remotePackage">The package which is to be installed</param>
         /// <param name="asset">The version of the asset being installed</param>
         /// <param name="zipPath"></param>
-        public static void InstallPackage(Package remotePackage, Asset asset, string zipPath)
+        public static void InstallPackage(Package remotePackage, Asset asset, string zipPath, out Package package)
         {
             string packageDirectory = Path.Combine(Config.PackageInstallationFolder, remotePackage.ID);
             ZipFile.ExtractToDirectory(zipPath, packageDirectory);
 
             remotePackage.Assets.Clear();
             remotePackage.Assets.Add(asset);
+
+            package = remotePackage;
 
             PackageList.Add(remotePackage);
         }

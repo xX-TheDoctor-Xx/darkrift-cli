@@ -12,16 +12,18 @@ namespace DarkRift.PMF
         /// </summary>
         /// <param name="list"></param>
         /// <param name="id"></param>
-        public static void Remove(this List<Package> list, string id)
+        public static bool Remove(this List<Package> list, string id)
         {
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i].ID == id)
                 {
                     list.RemoveAt(i);
-                    break;
+                    return true;
                 }
             }
+
+            return false;
         }
 
 
