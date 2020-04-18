@@ -108,7 +108,7 @@ namespace DarkRift.Cli
         private static int Run(RunOptions opts)
         {
             // its simply not a project
-            if (Project.Loaded)
+            if (!Project.Loaded)
             {
                 Console.WriteLine(Output.Red($"The current folder is not a project"));
                 return 1;
