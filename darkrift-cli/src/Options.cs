@@ -85,10 +85,13 @@ namespace DarkRift.Cli
         [Value(0, Required = true, HelpText = "Specifies the option you want to execute - Install, Uninstall, Update")]
         public PackageOperation PackageOperation { get; set; }
 
+        [Option('l', "latest", Default = false, HelpText = "Installs or updates a package to the latest version")]
+        public bool Latest { get; set; }
+
         [Option('c', "cli", Default = false, HelpText = "Specifies that the CLI will be updated")]
         public bool UpgradeCli { get; set; }
 
-        [Option('p', "package", HelpText = "ID of a package, if you need a specific version use \"@x.x.x\"")]
+        [Value(1, Required = false, HelpText = "ID of a package, if you need a specific version use \"@x.x.x\"")]
         public string PackageId { get; set; }
 
         // This is here for convinience

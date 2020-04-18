@@ -267,7 +267,9 @@ namespace DarkRift.Cli
             PackageState state;
 
             // If PackageVersion is null we just install the latest version for the sdk
-            if (opts.PackageVersion != null)
+            if (opts.Latest)
+                state = PackageManager.InstallLatest(opts.PackageId, out Package package);
+            else if (opts.PackageVersion != null)
                 state = PackageManager.Install(opts.PackageId, opts.PackageVersion, out Package package);
             else
                 state = PackageManager.InstallBySdkVersion(opts.PackageId, out Package package);
@@ -288,7 +290,7 @@ namespace DarkRift.Cli
             }
             else if (state == PackageState.VersionNotFound)
             {
-                Console.Error.WriteLine($"Couldn't find {opts.PackageId} with SDK version {Config.CurrentSdkVersion}");
+                Console.Error.WriteLine($"Couldn't find package version with SDK version {Config.CurrentSdkVersion}");
             }
             else // PackageState.Failed
             {
@@ -315,67 +317,39 @@ namespace DarkRift.Cli
 
         private static int UpdatePackage(PackageOptions opts)
         {
+            PackageState state = PackageState.Failed;
+            if (opts.Latest)
+                state = PackageManager.UpdateLatest(opts.PackageId, out Package package);
+            else if (opts.PackageVersion != null)
+                state = PackageManager.UpdatePackage(opts.PackageId, opts.PackageVersion, out Package package);
             // If PackageVersion is null we just install the latest version for the sdk
-            if (opts.PackageVersion != null)
-            {
-                PackageState state = PackageManager.UpdateLatest(opts.PackageId, out Package package);
-                // check if success
-                if (state == PackageState.Installed)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} was updated to version {opts.PackageVersion}");
-                    return 0;
-                }
-                else if (state == PackageState.NotInstalled)
-                {
-                    Console.Error.WriteLine($"Package {opts.PackageId} is not installed");
-                }
-                else if (state == PackageState.NotExisting)
-                {
-                    Console.Error.WriteLine($"Package {opts.PackageId} doesn't exist");
-                }
-                else if (state == PackageState.UpToDate)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} is up to date");
-                }
-                else if (state == PackageState.Cancelled)
-                {
-                    return 0;
-                }
-                else // PackageState.Failed
-                {
-                    Console.Error.WriteLine(Output.Red($"Something went wrong"));
-                }
-            }
             else
+                state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package);
+
+            if (state == PackageState.Installed)
             {
-                PackageState state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package);
-                // check if success
-                if (state == PackageState.Installed)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
-                    return 0;
-                }
-                else if (state == PackageState.NotExisting)
-                {
-                    Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
-                }
-                else if (state == PackageState.VersionNotFound)
-                {
-                    Console.Error.WriteLine($"Couldn't find {opts.PackageId} with SDK version {Config.CurrentSdkVersion}");
-                }
-                else if (state == PackageState.UpToDate)
-                {
-                    Console.WriteLine($"Package {opts.PackageId} is already up to date");
-                    return 0;
-                }
-                else if (state == PackageState.Cancelled)
-                {
-                    return 0;
-                }
-                else // PackageState.Failed
-                {
-                    Console.Error.WriteLine(Output.Red($"Something went wrong"));
-                }
+                Console.WriteLine($"{opts.PackageId} was updated to version {opts.PackageVersion}");
+                return 0;
+            }
+            else if (state == PackageState.NotInstalled)
+            {
+                Console.Error.WriteLine($"{opts.PackageId} is not installed");
+            }
+            else if (state == PackageState.NotExisting)
+            {
+                Console.Error.WriteLine($"Couldn't find any matching package version for your options");
+            }
+            else if (state == PackageState.UpToDate)
+            {
+                Console.WriteLine($"{opts.PackageId} is up to date");
+            }
+            else if (state == PackageState.Cancelled)
+            {
+                return 0;
+            }
+            else // PackageState.Failed
+            {
+                Console.Error.WriteLine(Output.Red($"Something went wrong"));
             }
 
             return 1;
@@ -399,12 +373,12 @@ namespace DarkRift.Cli
                     // check if success
                     if (state == PackageState.Installed)
                     {
-                        Console.WriteLine($"Package {opts.PackageId} was updated to version {package.Assets[0].Version}");
+                        Console.WriteLine($"{opts.PackageId} was updated to version {package.Assets[0].Version}");
                         return 0;
                     }
                     else if (state == PackageState.UpToDate)
                     {
-                        Console.WriteLine($"Package {opts.PackageId} is already up to date");
+                        Console.WriteLine($"{opts.PackageId} is already up to date");
                         return 0;
                     }
                     else // PackageState.Failed
