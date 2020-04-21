@@ -9,8 +9,6 @@ namespace DarkRift.Cli
     /// </summary>
     public class Runtime
     {
-        // This ensures the version object is correctly converted
-        [JsonConverter(typeof(VersionConverter))]
         /// <summary>
         /// The version of DarkRift to use.
         /// </summary>
