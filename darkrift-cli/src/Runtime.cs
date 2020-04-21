@@ -1,4 +1,6 @@
-﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 
 namespace DarkRift.Cli
 {
