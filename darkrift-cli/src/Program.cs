@@ -195,7 +195,7 @@ namespace DarkRift.Cli
 
                 if (docsInstalled && !opts.Force)
                 {
-                    Console.WriteLine(Output.Green($"Documentation for DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use the option -f or --force"));
+                    Console.WriteLine(Output.Green($"Documentation for DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use darkrift pull {opts.Version} -f"));
                     success = true;
                 }
                 else
@@ -206,7 +206,7 @@ namespace DarkRift.Cli
                 bool versionInstalled = VersionManager.IsVersionInstalled(opts.Version, actualTier, opts.Platform);
                 if (versionInstalled && !opts.Force)
                 {
-                    Console.WriteLine(Output.Green($"DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use the option -f or --force"));
+                    Console.WriteLine(Output.Green($"DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use darkrift pull {opts.Version} -f"));
                     success = true;
                 }
                 else
@@ -343,10 +343,6 @@ namespace DarkRift.Cli
             {
                 Console.WriteLine($"{opts.PackageId} is up to date");
             }
-            else if (state == PackageState.Cancelled)
-            {
-                return 0;
-            }
             else // PackageState.Failed
             {
                 Console.Error.WriteLine(Output.Red($"Something went wrong"));
@@ -369,7 +365,7 @@ namespace DarkRift.Cli
             {
                 foreach (Package package in LocalPackageManager.PackageList)
                 {
-                    PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p, true);
+                    PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p);
                     // check if success
                     if (state == PackageState.Installed)
                     {

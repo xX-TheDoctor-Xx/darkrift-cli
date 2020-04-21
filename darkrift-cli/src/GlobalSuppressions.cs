@@ -7,3 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles")]
 [assembly: SuppressMessage("Style", "IDE0063:Use simple 'using' statement")]
+[assembly: SuppressMessage("Style", "IDE0044:Add readonly modifier")]

@@ -37,7 +37,7 @@ namespace DarkRift.Cli
     [Verb("pull", HelpText = "Pulls the specified version of DarkRift locally.")]
     public class PullOptions
     {
-        [Value(0, Required = false)]
+        [Value(0, Required = false, HelpText = "Version of DarkRift to be installed")]
         public Version Version { get; set; }
 
         [Option('p', "pro", Default = false, HelpText = "Use the pro version.")]
