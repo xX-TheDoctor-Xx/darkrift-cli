@@ -52,20 +52,12 @@ namespace DarkRift.Cli
 
         private static int New(NewOptions opts)
         {
-            Version version = opts.Version ?? VersionManager.GetLatestDarkRiftVersion();
+            string version = opts.Version ?? VersionManager.GetLatestDarkRiftVersion();
+            var tier = opts.Pro ? ServerTier.Pro : ServerTier.Free;
 
             // Executes the command to download the version if it doesn't exist
-            if (Pull(new PullOptions()
-            {
-                Version = version,
-                Pro = opts.Pro,
-                Platform = opts.Platform,
-                Force = false
-            }) != 0)
-            {
-                Console.Error.WriteLine(Output.Red("An error occured while trying to download the version required, exiting New"));
-                return 2;
-            }
+            if (!VersionManager.IsVersionInstalled(version, tier, opts.Platform))
+                VersionManager.DownloadVersion(version, tier, opts.Platform);
 
             string targetDirectory = opts.TargetDirectory ?? Environment.CurrentDirectory;
             string templatePath = Path.Combine(TEMPLATES_PATH, opts.Type + ".zip");
@@ -115,17 +107,8 @@ namespace DarkRift.Cli
             }
 
             // Executes the command to download the version if it doesn't exist
-            if (Pull(new PullOptions()
-            {
-                Version = Project.Runtime.Version,
-                Pro = Project.Runtime.Tier == ServerTier.Pro,
-                Platform = Project.Runtime.Platform,
-                Force = false
-            }) != 0)
-            {
-                Console.Error.WriteLine(Output.Red("An error occured while trying to download the version required, exiting New"));
-                return 2;
-            }
+            if (!VersionManager.IsVersionInstalled(Project.Runtime.Version, Project.Runtime.Tier, Project.Runtime.Platform))
+                VersionManager.DownloadVersion(Project.Runtime.Version, Project.Runtime.Tier, Project.Runtime.Platform);
 
             string path = VersionManager.GetInstallationPath(Project.Runtime.Version, Project.Runtime.Tier, Project.Runtime.Platform);
 
@@ -201,7 +184,7 @@ namespace DarkRift.Cli
                 else
                     success = VersionManager.DownloadDocumentation(opts.Version);
             }
-            else if (opts.Version != null)
+            else
             {
                 bool versionInstalled = VersionManager.IsVersionInstalled(opts.Version, actualTier, opts.Platform);
                 if (versionInstalled && !opts.Force)
