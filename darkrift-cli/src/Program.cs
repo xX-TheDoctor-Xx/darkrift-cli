@@ -25,6 +25,8 @@ namespace DarkRift.Cli
         public static int Main(string[] args)
         {
             Project.Load();
+            Profile.Load();
+
             return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, PullOptions, DocsOptions, PackageOptions>(args)
                 .MapResult(
                     (NewOptions opts) => New(opts),
@@ -99,7 +101,7 @@ namespace DarkRift.Cli
 
         private static int Run(RunOptions opts)
         {
-            // its simply not a project
+            // Its simply not a project
             if (!Project.Loaded)
             {
                 Console.WriteLine(Output.Red($"The current folder is not a project"));
@@ -178,7 +180,7 @@ namespace DarkRift.Cli
 
                 if (docsInstalled && !opts.Force)
                 {
-                    Console.WriteLine(Output.Green($"Documentation for DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use darkrift pull {opts.Version} -f"));
+                    Console.WriteLine(Output.Green($"Documentation for DarkRift {opts.Version} - {actualTier} (.NET {opts.Platform}) already installed! To force a reinstall use darkrift pull docs {opts.Version} -f"));
                     success = true;
                 }
                 else
@@ -402,7 +404,8 @@ namespace DarkRift.Cli
                 return 1;
             }
 
-            Config.CurrentSdkVersion = new Version("0.0.1");
+            // This needs to be properly set
+            Config.CurrentSdkVersion = "0.0.1";
             Config.ManifestFileName = "manifest.json";
             Config.PackageInstallationFolder = ".packages";
             Config.RepositoryEndpoint = "http://localhost:3000/package";
