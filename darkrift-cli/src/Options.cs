@@ -64,9 +64,6 @@ namespace DarkRift.Cli
 
         [Option('l', "local", Default = false, HelpText = "Opens a local copy of the documentation.")]
         public bool Local { get; set; }
-
-        [Option("latest", Default = false, HelpText = "Specifies latest version")]
-        public bool Latest { get; set; }
     }
 
     public enum PackageOperation

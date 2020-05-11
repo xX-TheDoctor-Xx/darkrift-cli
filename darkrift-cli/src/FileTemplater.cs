@@ -9,37 +9,6 @@ namespace DarkRift.Cli
     /// </summary>
     internal static class FileTemplater
     {
-        internal static string Normalize(string str)
-        {
-            string returnString = "";
-
-            bool alreadyUpperCase = false;
-            for (var i = 0; i < str.Length; i++)
-            {
-                if (!IsSpecialChar(str[i]))
-                {
-                    if (alreadyUpperCase)
-                        returnString += char.ToLower(str[i]);
-                    else
-                    {
-                        returnString += char.ToUpper(str[i]);
-                        alreadyUpperCase = true;
-                    }
-                }
-                else
-                {
-                    alreadyUpperCase = false;
-                }
-            }
-
-            return returnString;
-        }
-
-        internal static bool IsSpecialChar(char c)
-        {
-            return !(char.IsLetter(c) || c == '_');
-        }
-
         /// <summary>
         /// Normalizes a string according to issue #25
         /// my-plugin -> MyPlugin | My amazing plugin -> MyAmazingPlugin

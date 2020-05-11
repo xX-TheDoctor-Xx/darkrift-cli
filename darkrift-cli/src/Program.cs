@@ -149,7 +149,7 @@ namespace DarkRift.Cli
             }
 
             // if version provided is "latest", it is being replaced with currently most recent one
-            if (opts.Latest)
+            if (opts.Version == "latest")
             {
                 opts.Version = VersionManager.GetLatestDarkRiftVersion();
             }
@@ -211,7 +211,7 @@ namespace DarkRift.Cli
         private static int Docs(DocsOptions opts)
         {
             // If "latest" option is provided we use the most recent version
-            if (opts.Latest)
+            if (opts.Version == "latest")
             {
                 opts.Version = VersionManager.GetLatestDarkRiftVersion();
             }
@@ -225,7 +225,7 @@ namespace DarkRift.Cli
                 }
                 else
                 {
-                    Console.Error.WriteLine(Output.Red($"Couldn't find a version to download documentation. To download latest version use option --latest"));
+                    Console.Error.WriteLine(Output.Red($"Couldn't find a version to download documentation. To download latest version 'latest'"));
                     return 2;
                 }
             }
@@ -235,7 +235,7 @@ namespace DarkRift.Cli
                 if (VersionManager.IsDocumentationInstalled(opts.Version))
                     BrowserUtil.OpenTo("file://" + VersionManager.GetDocumentationPath(opts.Version) + "/index.html");
                 else
-                    Console.Error.WriteLine(Output.Red($"Documentation not installed, consider running \"darkrift pull --docs --version {opts.Version}\""));
+                    Console.Error.WriteLine(Output.Red($"Documentation not installed, consider running \"darkrift pull {opts.Version} --docs\""));
             }
             else if (opts.Version != null)
             {
