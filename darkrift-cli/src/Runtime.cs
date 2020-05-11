@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 
 namespace DarkRift.Cli
 {
@@ -12,11 +14,15 @@ namespace DarkRift.Cli
         /// </summary>
         public string Version { get; set; }
 
+        // This converts enum to string and vice versa when generating or parsing json
+        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// If .NET core or .NET framework should be used.
         /// </summary>
         public ServerPlatform Platform { get; set; }
 
+        // This converts enum to string and vice versa when generating or parsing json
+        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// The tier of DarkRift to use.
         /// </summary>

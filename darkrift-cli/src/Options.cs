@@ -34,17 +34,10 @@ namespace DarkRift.Cli
         public IEnumerable<string> Values { get; set; }
     }
 
-    [Verb("get", HelpText = "Downloads a plugin package into this server.")]
-    public class GetOptions
-    {
-        [Value(0, Required = true)]
-        public string Url { get; set; }
-    }
-
     [Verb("pull", HelpText = "Pulls the specified version of DarkRift locally.")]
     public class PullOptions
     {
-        [Value(0, Required = false, HelpText = "The version of DarkRift")]
+        [Value(0, Required = false, HelpText = "Version of DarkRift to be installed")]
         public string Version { get; set; }
 
         [Option('p', "pro", Default = false, HelpText = "Use the pro version.")]
@@ -66,7 +59,7 @@ namespace DarkRift.Cli
     [Verb("docs", HelpText = "Opens the documentation for DarkRift.")]
     public class DocsOptions
     {
-        [Value(0, Required = false, HelpText = "The version of DarkRift")]
+        [Value(0, Required = false)]
         public string Version { get; set; }
 
         [Option('l', "local", Default = false, HelpText = "Opens a local copy of the documentation.")]
@@ -74,5 +67,31 @@ namespace DarkRift.Cli
 
         [Option("latest", Default = false, HelpText = "Specifies latest version")]
         public bool Latest { get; set; }
+    }
+
+    public enum PackageOperation
+    {
+        Install,
+        Update,
+        Uninstall,
+    }
+
+    [Verb("package", HelpText = "Manages packages in a given project.")]
+    public class PackageOptions
+    {
+        [Value(0, Required = true, HelpText = "Specifies the option you want to execute - Install, Uninstall, Update")]
+        public PackageOperation PackageOperation { get; set; }
+
+        [Option('l', "latest", Default = false, HelpText = "Installs or updates a package to the latest version")]
+        public bool Latest { get; set; }
+
+        [Option('c', "cli", Default = false, HelpText = "Specifies that the CLI will be updated")]
+        public bool UpgradeCli { get; set; }
+
+        [Value(1, Required = false, HelpText = "ID of a package, if you need a specific version use \"@x.x.x\"")]
+        public string PackageId { get; set; }
+
+        // This is here for convinience
+        public Version PackageVersion { get; set; }
     }
 }

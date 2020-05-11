@@ -121,7 +121,7 @@ namespace DarkRift.Cli
             }
             catch
             {
-                return new List<string>();
+                return default;
             };
         }
 
@@ -198,9 +198,9 @@ namespace DarkRift.Cli
 
                     Console.WriteLine($"Server says the latest version is {versionMetadata.Latest}.");
 
-                    Profile profile = Profile.Load();
-                    profile.LatestKnownDarkRiftVersion = versionMetadata.Latest;
-                    profile.Save();
+
+                    Profile.LatestKnownDarkRiftVersion = versionMetadata.Latest;
+                    Profile.Save();
 
                     latestDarkRiftVersion = versionMetadata.Latest;
 
@@ -211,7 +211,7 @@ namespace DarkRift.Cli
             {
                 Console.WriteLine(Output.Yellow($"Could not query latest DarkRift version from the server. Will use the last known latest instead.\n\t{e.Message}"));
 
-                latestDarkRiftVersion = Profile.Load().LatestKnownDarkRiftVersion;
+                latestDarkRiftVersion = Profile.LatestKnownDarkRiftVersion;
 
                 if (latestDarkRiftVersion == null)
                 {
@@ -231,9 +231,7 @@ namespace DarkRift.Cli
         /// <returns>The user's invoice number, or null if they do not have one.</returns>
         private static string GetInvoiceNumber()
         {
-            Profile profile = Profile.Load();
-
-            if (string.IsNullOrWhiteSpace(profile.InvoiceNumber))
+            if (string.IsNullOrWhiteSpace(Profile.InvoiceNumber))
             {
                 Console.WriteLine("To download a Pro release you must provide an invoice number to verify your purchase. This will usually be found in your recept from the Unity Asset Store.");
                 Console.WriteLine("Please enter it: ");
@@ -245,11 +243,11 @@ namespace DarkRift.Cli
                     return null;
                 }
 
-                profile.InvoiceNumber = invoiceNumber;
-                profile.Save();
+                Profile.InvoiceNumber = invoiceNumber;
+                Profile.Save();
             }
 
-            return profile.InvoiceNumber;
+            return Profile.InvoiceNumber;
         }
 
         /// <summary>

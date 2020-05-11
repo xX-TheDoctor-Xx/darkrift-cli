@@ -1,15 +1,16 @@
 # DarkRift CLI Tool
 This tool is designed to make DarkRift projects more structured and uniform across all users as well as providing a single interface to simplify common tasks.
 
-To start with, the tool handles four common tasks:
-- Creating projects, plugins and other resources from scratch;
-- downloading and managing different versions of DarkRift;
-- downloading and installing plugins from online locations; and,
-- running a server from centralized binaries.
-
-In future, this tool will likely handle:
+To start with, the tool handles these common tasks:
+- Create projects, plugins and other resources from scratch;
+- Download and manage different versions of DarkRift;
+- Download and install plugins from remote sources;
+- Run server from centralized binaries.
 - Package management to allow easier download of common plugins (network listeners, log writers etc.)
+
+In the future, this tool will likely handle:
 - Managing remote servers (e.g. executing commands over SSH/HTTP, retrieving logs)
+- Auto update CLI
 
 # Installation
 ## From Releases (recommended)
@@ -27,20 +28,11 @@ To build from source, clone the repository and run `dotnet publish`. You will th
 ## New
 To create a new project etc. from template use:
 ```bash
-darkrift new project my-project
-darkrift new plugin my-plugin
-darkrift new log-writer my-plugin
-darkrift new network-listener my-plugin
+darkrift new project myProject
+darkrift new plugin myPlugin
+darkrift new log-writer myPlugin
+darkrift new network-listener myPlugin
 ```
-
-## Get
-To download and install a plugin from a remote location use:
-```bash
-darkrift get http://url-of.your/plugin.zip
-```
-The archive will be decompressed into the `plugins` directory.
-
-Note: this sub-command may be deprecated in the future if/once a  full package management system is implemented.
 
 ## Run
 To run your project use:
@@ -55,7 +47,7 @@ darkrift pull 2.4.5
 ```
 This version of DarkRift is than available for use in your projects when starting a server with `darkrift run`. Specifying without a version number will use your current project's version and specifying latest will get the latest version of DarkRift. You can also specify -f to force a download
 
-In most cases you do not need to do this yourself as `darkrift run` will automatically download the correct version.
+In most cases you don't need to do this yourself as `darkrift run` will automatically download the correct version.
 
 You can also list all the DarkRift version you have installed with:
 ```bash
@@ -68,6 +60,40 @@ To access the DarkRift documentation you can simply use:
 darkrift docs 2.4.5
 ```
 Specifying without a version number will use your current project's version and specifying latest will get the documentation for the latest version of DarkRift. You can also add the `--local` flag to download the documentation to your local machine (note, this doesn't seem to render correctly in Firefox though).
+
+## Package Manager
+
+Currently the package manager supports three commands
+
+### Install
+
+To install a package with the DarkRift package manager you can simply use:
+
+```bash
+darkrift package install packageId
+```
+
+This will install the latest version of the selected package. To install a specific version you can append "@1.0.0.0" to the pluginId.
+
+### Update
+
+To update a package you can run:
+
+```bash
+darkrift package update packageId
+```
+
+Executing update without a packageId will automatically update all packages you have in your project to the most recent version
+
+It can also update to a specific version.
+
+### Uninstall
+
+Simply removes a package from your project
+
+```bash
+darkrift package uninstall packageId
+```
 
 # Development
 Pull requests are actively encouraged on all open source DarkRift projects! This section will provide some useful advice for extending or improving the DarkRift CLI tool.
