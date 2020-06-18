@@ -13,11 +13,6 @@ namespace DarkRift.Cli
     internal class VersionManager
     {
         /// <summary>
-        /// The DarkRift settings directory path.
-        /// </summary>
-        private static readonly string USER_DR_DIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".darkrift");
-
-        /// <summary>
         /// The latest version of DarkRift.
         /// </summary>
         private static string latestDarkRiftVersion;
@@ -31,7 +26,7 @@ namespace DarkRift.Cli
         /// <returns>The path to the installation, or null, if it cannot be provided.</returns>
         public static string GetInstallationPath(string version, ServerTier tier, ServerPlatform platform)
         {
-            return Path.Combine(USER_DR_DIR, "installed", tier.ToString().ToLower(), platform.ToString().ToLower(), version);
+            return Path.Combine(Config.USER_DR_DIR, "installed", tier.ToString().ToLower(), platform.ToString().ToLower(), version);
         }
 
         /// <summary>
@@ -43,9 +38,9 @@ namespace DarkRift.Cli
         /// <returns>True if installed successfully otherwise false</returns>
         public static bool DownloadVersion(string version, ServerTier tier, ServerPlatform platform)
         {
-            string fullPath = Path.Combine(USER_DR_DIR, "installed", tier.ToString().ToLower(), platform.ToString().ToLower(), version);
+            string fullPath = GetInstallationPath(version, tier, platform);
 
-            string stagingPath = Path.Combine(USER_DR_DIR, "Download.zip");
+            string stagingPath = Path.Combine(Config.USER_DR_DIR, "Download.zip");
 
             string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/{version}/{tier}/{platform}/";
             if (tier == ServerTier.Pro)
@@ -107,14 +102,19 @@ namespace DarkRift.Cli
         {
             try
             {
-                string[] paths = Directory.GetDirectories(Path.Combine(USER_DR_DIR, "installed", $"{tier.ToString().ToLower()}", $"{platform.ToString().ToLower()}"));
+                var installationFolder = GetInstallationPath("", tier, platform);
 
                 List<string> versions = new List<string>();
 
-                // This removes the path and just leaves the version number
-                for (int i = 0; i < paths.Length; i++)
+                if (Directory.Exists(installationFolder))
                 {
-                    versions.Add(Path.GetFileName(paths[i]));
+                    string[] paths = Directory.GetDirectories(installationFolder);
+
+                    // This removes the path and just leaves the version number
+                    for (int i = 0; i < paths.Length; i++)
+                    {
+                        versions.Add(Path.GetFileName(paths[i]));
+                    }
                 }
 
                 return versions;
@@ -122,7 +122,7 @@ namespace DarkRift.Cli
             catch
             {
                 return default;
-            };
+            }
         }
 
 
@@ -166,7 +166,7 @@ namespace DarkRift.Cli
 
             output += $"DarkRift {version} - {tier} (.NET {platform})";
 
-            if (Directory.Exists(Path.Combine(USER_DR_DIR, "documentation", version)))
+            if (Directory.Exists(Path.Combine(Config.USER_DR_DIR, "documentation", version)))
                 output += " and its documentation are";
             else output += " is";
 
@@ -197,7 +197,6 @@ namespace DarkRift.Cli
                     VersionMetadata versionMetadata = VersionMetadata.Parse(latestJson);
 
                     Console.WriteLine($"Server says the latest version is {versionMetadata.Latest}.");
-
 
                     Profile.LatestKnownDarkRiftVersion = versionMetadata.Latest;
                     Profile.Save();
@@ -257,7 +256,7 @@ namespace DarkRift.Cli
         /// <returns>The path to the documentation, or null, if it cannot be provided.</returns>
         public static string GetDocumentationPath(string version)
         {
-            return Path.Combine(USER_DR_DIR, "documentation", version);
+            return Path.Combine(Config.USER_DR_DIR, "documentation", version);
         }
 
         /// <summary>
@@ -269,7 +268,7 @@ namespace DarkRift.Cli
         {
             string fullPath = GetDocumentationPath(version);
 
-            string stagingPath = Path.Combine(USER_DR_DIR, "Download.zip");
+            string stagingPath = Path.Combine(Config.USER_DR_DIR, "Download.zip");
 
             string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/{version}/Docs/";
             try

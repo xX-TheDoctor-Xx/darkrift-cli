@@ -24,6 +24,8 @@ namespace DarkRift.Cli
 
         public static int Main(string[] args)
         {
+            Directory.CreateDirectory(Config.USER_DR_DIR);
+
             Project.Load();
             Profile.Load();
 

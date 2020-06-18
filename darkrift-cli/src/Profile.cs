@@ -19,11 +19,6 @@ namespace DarkRift.Cli
     public static class Profile
     {
         /// <summary>
-        /// The DarkRift settings directory path.
-        /// </summary>
-        private static readonly string USER_DR_DIR = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".darkrift");
-
-        /// <summary>
         /// The user's Unity Asset Store invoice number.
         /// </summary>
         public static string InvoiceNumber { get; set; }
@@ -39,7 +34,7 @@ namespace DarkRift.Cli
         /// <returns>The user's profile.</returns>
         public static void Load()
         {
-            var path = Path.Combine(USER_DR_DIR, "project.json");
+            var path = Path.Combine(Config.USER_DR_DIR, "project.json");
             if (File.Exists(path))
             {
                 var project = JsonConvert.DeserializeObject<ProfileNotStatic>(File.ReadAllText(path));
@@ -52,9 +47,8 @@ namespace DarkRift.Cli
         /// </summary>
         public static void Save()
         {
-            Directory.CreateDirectory(USER_DR_DIR);
             var text = JsonConvert.SerializeObject(mapNotStaticClass());
-            File.WriteAllText(Path.Combine(USER_DR_DIR, "project.json"), text);
+            File.WriteAllText(Path.Combine(Config.USER_DR_DIR, "project.json"), text);
         }
 
         private static void mapStaticClass(ProfileNotStatic pns)
