@@ -133,7 +133,7 @@ namespace DarkRift.Cli
             // If it is not defined it just updates all packages to the latest version of the sdk
             else
             {
-                foreach (Package package in LocalPackageManager.PackageList)
+                foreach (Package package in PackageManager.PackageList)
                 {
                     PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p);
                     // check if success

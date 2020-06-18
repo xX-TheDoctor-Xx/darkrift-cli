@@ -284,7 +284,7 @@ namespace DarkRift.Cli
                 return 1;
             }
 
-            LocalPackageManager.Start();
+            PackageManager.Start();
 
             // This is to make sure LocalPackageManager.Stop() is called at the end of the method
             // This value is returned ater this method
@@ -303,7 +303,7 @@ namespace DarkRift.Cli
                 returnValue = DarkRiftPackageManager.Update(opts);
             }
 
-            LocalPackageManager.Stop();
+            PackageManager.Stop();
             return returnValue;
         }
     }
