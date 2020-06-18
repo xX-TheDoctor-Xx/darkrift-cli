@@ -45,7 +45,7 @@ namespace DarkRift.Cli
             }
             else if (state == PackageState.VersionNotFound)
             {
-                Console.Error.WriteLine($"Couldn't find package version with SDK version {Config.CurrentSdkVersion}");
+                Console.Error.WriteLine($"Couldn't find package version with SDK version {PMF.Config.CurrentSdkVersion}");
             }
             else // PackageState.Failed
             {

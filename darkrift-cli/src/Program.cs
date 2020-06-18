@@ -273,11 +273,11 @@ namespace DarkRift.Cli
             }
 
             // This needs to be properly set
-            Config.CurrentSdkVersion = "0.0.1";
-            Config.ManifestFileName = "manifest.json";
-            Config.PackageInstallationFolder = ".packages";
-            Config.RepositoryEndpoint = "http://localhost:3000/package";
-            Config.IsDebugging = true;
+            PMF.Config.CurrentSdkVersion = "0.0.1";
+            PMF.Config.ManifestFileName = "manifest.json";
+            PMF.Config.PackageInstallationFolder = ".packages";
+            PMF.Config.RepositoryEndpoint = "http://localhost:3000/package";
+            PMF.Config.IsDebugging = true;
 
             // this will always be necessary unless the option is update
             if (string.IsNullOrEmpty(opts.PackageId) && opts.PackageOperation != PackageOperation.Update)
