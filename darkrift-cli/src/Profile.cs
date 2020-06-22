@@ -34,10 +34,23 @@ namespace DarkRift.Cli
         /// <returns>The user's profile.</returns>
         public static void Load()
         {
+            // Should this be called project.json? Im switching it to profile.json
             var path = Path.Combine(Config.USER_DR_DIR, "project.json");
+            var profilePath = Path.Combine(Config.USER_DR_DIR, "profile.json");
             if (File.Exists(path))
             {
-                var project = JsonConvert.DeserializeObject<ProfileNotStatic>(File.ReadAllText(path));
+                // Converts the project.json to profile.json
+                var text = File.ReadAllText(path);
+                File.WriteAllText(profilePath, text);
+                File.Delete(path);
+
+                var project = JsonConvert.DeserializeObject<ProfileNotStatic>(text);
+                mapStaticClass(project);
+            }
+            else if (File.Exists(profilePath))
+            {
+                var text = File.ReadAllText(profilePath);
+                var project = JsonConvert.DeserializeObject<ProfileNotStatic>(text);
                 mapStaticClass(project);
             }
         }

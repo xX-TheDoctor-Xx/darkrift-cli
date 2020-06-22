@@ -31,7 +31,7 @@ namespace DarkRift.Cli
 
             if (state == PackageState.Installed)
             {
-                Console.WriteLine(Output.Green($"{opts.PackageId} version {opts.PackageVersion} was installed successfully"));
+                Console.WriteLine(Output.Green($"{opts.PackageId}@{opts.PackageVersion} was installed successfully"));
                 return 0;
             }
             else if (state == PackageState.AlreadyInstalled)

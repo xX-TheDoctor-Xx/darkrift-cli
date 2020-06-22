@@ -26,6 +26,7 @@ namespace DarkRift.Cli
         /// <returns>The project.</returns>
         public static void Load()
         {
+            // Checks for project.json in current folder
             if (File.Exists("project.json"))
             {
                 var project = JsonConvert.DeserializeObject<ProjectNotStatic>(File.ReadAllText("project.json"));

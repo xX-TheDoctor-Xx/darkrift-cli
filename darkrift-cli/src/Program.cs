@@ -26,8 +26,8 @@ namespace DarkRift.Cli
         {
             Directory.CreateDirectory(Config.USER_DR_DIR);
 
-            Project.Load();
             Profile.Load();
+            Project.Load();
 
             return new Parser(SetupParser).ParseArguments<NewOptions, RunOptions, PullOptions, DocsOptions, PackageOptions>(args)
                 .MapResult(

@@ -74,7 +74,7 @@ namespace DarkRift.Cli
 
             ZipFile.ExtractToDirectory(stagingPath, fullPath, true);
 
-            Console.WriteLine(Output.Green($"Successfully downloaded package."));
+            Console.WriteLine(Output.Green($"Successfully downloaded DarkRift {version} - {tier} (.NET {platform})"));
 
             return true;
         }
@@ -91,40 +91,31 @@ namespace DarkRift.Cli
             return GetVersions(tier, platform).Contains(version);
         }
 
-
         /// <summary>
         /// Gets a list of versions with specific tier and platform
         /// </summary>
         /// <param name="tier">The tier</param>
         /// <param name="platform">The platform</param>
-        /// <returns></returns>
+        /// <returns>List of paths to the versions</returns>
         public static List<string> GetVersions(ServerTier tier, ServerPlatform platform)
         {
-            try
+            var installationFolder = GetInstallationPath("", tier, platform);
+
+            List<string> versions = new List<string>();
+
+            if (Directory.Exists(installationFolder))
             {
-                var installationFolder = GetInstallationPath("", tier, platform);
+                string[] paths = Directory.GetDirectories(installationFolder);
 
-                List<string> versions = new List<string>();
-
-                if (Directory.Exists(installationFolder))
+                // This removes the path and just leaves the version number
+                for (int i = 0; i < paths.Length; i++)
                 {
-                    string[] paths = Directory.GetDirectories(installationFolder);
-
-                    // This removes the path and just leaves the version number
-                    for (int i = 0; i < paths.Length; i++)
-                    {
-                        versions.Add(Path.GetFileName(paths[i]));
-                    }
+                    versions.Add(Path.GetFileName(paths[i]));
                 }
+            }
 
-                return versions;
-            }
-            catch
-            {
-                return default;
-            }
+            return versions;
         }
-
 
         /// <summary>
         /// Lists installed DarkRift versions on the console along with the documentation
@@ -271,6 +262,7 @@ namespace DarkRift.Cli
             string stagingPath = Path.Combine(Config.USER_DR_DIR, "Download.zip");
 
             string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/{version}/Docs/";
+
             try
             {
                 using (WebClient myWebClient = new WebClient())
@@ -290,7 +282,7 @@ namespace DarkRift.Cli
 
             ZipFile.ExtractToDirectory(stagingPath, fullPath, true);
 
-            Console.WriteLine(Output.Green($"Successfully downloaded package."));
+            Console.WriteLine(Output.Green($"Successfully downloaded documentation for version {version}"));
 
             return true;
         }
