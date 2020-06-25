@@ -3,7 +3,10 @@ using PMF;
 using PMF.Managers;
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Reflection;
+using System.Threading;
 
 namespace DarkRift.Cli
 {
@@ -151,7 +154,61 @@ namespace DarkRift.Cli
             {
                 string myPath = Directory.GetDirectoryRoot(Assembly.GetEntryAssembly().Location);
 
-                // i have no idea how i should do this
+                string uri = $"https://www.darkriftnetworking.com/DarkRiftCLI/Releases/";
+                using (WebClient myWebClient = new WebClient())
+                {
+                    string latestJson = null;
+
+                    try
+                    {
+                        latestJson = myWebClient.DownloadString(uri);
+                    }
+                    catch (WebException)
+                    {
+                        Console.WriteLine(Output.Red("Couldn't check for the latest version of the CLI"));
+                        return 1;
+                    }
+
+                    // Parse out 'latest' field
+                    VersionMetadata versionMetadata = VersionMetadata.Parse(latestJson);
+
+                    var version = Assembly.GetEntryAssembly().GetName().Version;
+                    var serverVersion = new Version(versionMetadata.Latest);
+
+                    if (serverVersion == version)
+                    {
+                        Console.WriteLine("DarkRift CLI is up to date");
+                        return 0;
+                    }
+                    else if (serverVersion > version)
+                    {
+                        Console.WriteLine($"Server says the latest version of the CLI is {versionMetadata.Latest}.");
+                        Console.WriteLine($"Current version installed is {version}");
+                        Console.WriteLine("Updating");
+
+                        string stagingPath = Path.Combine(Config.USER_DR_DIR, "DownloadCLI.zip");
+
+                        string uriDownload = $"https://www.darkriftnetworking.com/DarkRiftCLI/Releases/{serverVersion}";
+
+                        try
+                        {
+                            myWebClient.DownloadFile(uriDownload, stagingPath);
+                        }
+                        catch (WebException)
+                        {
+                            Console.WriteLine(Output.Red($"Couldn't download DarkRift CLI {serverVersion}"));
+                            return 1;
+                        }
+
+                        Console.WriteLine($"Extracting package...");
+
+                        ZipFile.ExtractToDirectory(stagingPath, Path.Combine(myPath, Assembly.GetEntryAssembly().GetName().Name, ".dll"), true);
+
+                        Console.WriteLine(Output.Green($"Successfully downloaded and installed DarkRift CLI {serverVersion}"));
+
+                        return 0;
+                    }
+                }
             }
             // If it is not defined it just updates all packages to the latest version of the sdk
             else
