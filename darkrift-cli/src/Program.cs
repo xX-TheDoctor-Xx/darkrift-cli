@@ -256,7 +256,7 @@ namespace DarkRift.Cli
 
                 try
                 {
-                    opts.PackageVersion = new Version(arr[1]);
+                    opts.PackageVersion = arr[1];
                 }
                 catch
                 {

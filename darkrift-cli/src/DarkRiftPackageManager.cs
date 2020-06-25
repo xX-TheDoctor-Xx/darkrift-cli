@@ -21,13 +21,24 @@ namespace DarkRift.Cli
         {
             PackageState state;
 
+            Package package;
+
             // If PackageVersion is null we just install the latest version for the sdk
-            if (opts.Latest)
-                state = PackageManager.InstallLatest(opts.PackageId, out Package package);
-            else if (opts.PackageVersion != null)
-                state = PackageManager.Install(opts.PackageId, opts.PackageVersion, out Package package);
+            if (opts.PackageVersion == "latest")
+                state = PackageManager.InstallLatest(opts.PackageId, out package);
             else
-                state = PackageManager.InstallBySdkVersion(opts.PackageId, out Package package);
+            {
+                if (opts.PackageVersion != null)
+                {
+                    opts.RealPackageVersion = new Version(opts.PackageVersion);
+                    state = PackageManager.Install(opts.PackageId, opts.RealPackageVersion, out package);
+                }
+                else
+                    state = PackageManager.InstallBySdkVersion(opts.PackageId, out package);
+            }
+
+            if (package != null && package.Assets.Count > 0)
+                opts.RealPackageVersion = package.Assets[0].Version;
 
             if (state == PackageState.Installed)
             {
@@ -83,13 +94,25 @@ namespace DarkRift.Cli
         public static int UpdatePackage(PackageOptions opts)
         {
             PackageState state = PackageState.Failed;
-            if (opts.Latest)
-                state = PackageManager.UpdateLatest(opts.PackageId, out Package package);
-            else if (opts.PackageVersion != null)
-                state = PackageManager.UpdatePackage(opts.PackageId, opts.PackageVersion, out Package package);
-            // If PackageVersion is null we just install the latest version for the sdk
+
+            Package package;
+
+            if (opts.PackageVersion == "latest")
+                state = PackageManager.UpdateLatest(opts.PackageId, out package);
             else
-                state = PackageManager.UpdateBySdkVersion(opts.PackageId, out Package package);
+            {
+                if (opts.PackageVersion != null)
+                {
+                    opts.RealPackageVersion = new Version(opts.PackageVersion);
+                    state = PackageManager.UpdatePackage(opts.PackageId, opts.RealPackageVersion, out package);
+                }
+                // If PackageVersion is null we just install the latest version for the sdk
+                else
+                    state = PackageManager.UpdateBySdkVersion(opts.PackageId, out package);
+            }
+
+            if (package != null && package.Assets.Count > 0)
+                opts.RealPackageVersion = package.Assets[0].Version;
 
             if (state == PackageState.Installed)
             {

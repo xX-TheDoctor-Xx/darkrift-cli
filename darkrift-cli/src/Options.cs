@@ -76,11 +76,8 @@ namespace DarkRift.Cli
     [Verb("package", HelpText = "Manages packages in a given project.")]
     public class PackageOptions
     {
-        [Value(0, Required = true, HelpText = "Specifies the option you want to execute - Install, Uninstall, Update")]
+        [Value(0, Required = true, HelpText = "Specifies the option you want to execute - install, uninstall, update")]
         public PackageOperation PackageOperation { get; set; }
-
-        [Option('l', "latest", Default = false, HelpText = "Installs or updates a package to the latest version")]
-        public bool Latest { get; set; }
 
         [Option('c', "cli", Default = false, HelpText = "Specifies that the CLI will be updated")]
         public bool UpgradeCli { get; set; }
@@ -89,6 +86,9 @@ namespace DarkRift.Cli
         public string PackageId { get; set; }
 
         // This is here for convinience
-        public Version PackageVersion { get; set; }
+        [Option('v', "version", Default = "latest", HelpText = "Version of the package to be installed. Use \"latest\" for the latest version")]
+        public string PackageVersion { get; set; }
+
+        public Version RealPackageVersion { get; set; }
     }
 }
