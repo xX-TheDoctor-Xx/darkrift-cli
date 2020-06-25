@@ -208,6 +208,11 @@ namespace DarkRift.Cli
 
                         return 0;
                     }
+                    else
+                    {
+                        Console.WriteLine("How can you possibly have a greater version than it is on the server???");
+                        return 1;
+                    }
                 }
             }
             // If it is not defined it just updates all packages to the latest version of the sdk
