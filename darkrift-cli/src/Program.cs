@@ -253,16 +253,7 @@ namespace DarkRift.Cli
             {
                 string[] arr = opts.PackageId.Split('@');
                 opts.PackageId = arr[0];
-
-                try
-                {
-                    opts.PackageVersion = arr[1];
-                }
-                catch
-                {
-                    Console.Error.WriteLine(Output.Red("Invalid version format"));
-                    return 1;
-                }
+                opts.PackageVersion = arr[1];
             }
             
             // its simply not a project
