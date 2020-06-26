@@ -24,6 +24,8 @@ namespace DarkRift.Cli
 
         public static int Main(string[] args)
         {
+            PMF.PMF.OnPackageMessage += PMF_OnPackageMessage;
+
             Directory.CreateDirectory(Config.USER_DR_DIR);
 
             Profile.Load();
@@ -37,6 +39,11 @@ namespace DarkRift.Cli
                     (DocsOptions opts) => Docs(opts),
                     (PackageOptions opts) => Packages(opts),
                     _ => 1);
+        }
+
+        private static void PMF_OnPackageMessage(string message)
+        {
+            Console.WriteLine(message);
         }
 
         /// <summary>

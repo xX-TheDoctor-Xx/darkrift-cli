@@ -45,23 +45,7 @@ namespace DarkRift.Cli
                 opts.RealPackageVersion = package.Assets[0].Version;
 
             if (state == PackageState.Installed)
-            {
-                Console.WriteLine(Output.Green($"{opts.PackageId}@{opts.PackageVersion} was installed successfully"));
                 return 0;
-            }
-            else if (state == PackageState.AlreadyInstalled)
-            {
-                Console.WriteLine($"{opts.PackageId} is already installed");
-                return 0;
-            }
-            else if (state == PackageState.NotExisting)
-            {
-                Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
-            }
-            else if (state == PackageState.VersionNotFound)
-            {
-                Console.Error.WriteLine($"Couldn't find package version with SDK version {PMF.Config.CurrentSdkVersion}");
-            }
             else // PackageState.Failed
             {
                 Console.Error.WriteLine(Output.Red($"Something went wrong"));
@@ -78,16 +62,7 @@ namespace DarkRift.Cli
         public static int Uninstall(PackageOptions opts)
         {
             // if true uninstall success, if false, package was not even installed
-            if (PackageManager.Uninstall(opts.PackageId))
-            {
-                Console.WriteLine(Output.Green($"{opts.PackageId} was uninstalled succesfully"));
-                return 0;
-            }
-            else
-            {
-                Console.Error.WriteLine($"Couldn't find {opts.PackageId}");
-                return 1;
-            }
+            return PackageManager.Uninstall(opts.PackageId) ? 0 : 1;
         }
 
         /// <summary>
@@ -120,26 +95,9 @@ namespace DarkRift.Cli
                 opts.RealPackageVersion = package.Assets[0].Version;
 
             if (state == PackageState.Installed)
-            {
-                Console.WriteLine($"{opts.PackageId} was updated to version {opts.PackageVersion}");
                 return 0;
-            }
-            else if (state == PackageState.NotInstalled)
-            {
-                Console.Error.WriteLine($"{opts.PackageId} is not installed");
-            }
-            else if (state == PackageState.NotExisting)
-            {
-                Console.Error.WriteLine($"Couldn't find any matching package version for your options");
-            }
-            else if (state == PackageState.UpToDate)
-            {
-                Console.WriteLine($"{opts.PackageId} is up to date");
-            }
             else // PackageState.Failed
-            {
                 Console.Error.WriteLine(Output.Red($"Something went wrong"));
-            }
 
             return 1;
         }
@@ -224,24 +182,12 @@ namespace DarkRift.Cli
                 {
                     PackageState state = PackageManager.UpdateBySdkVersion(package.ID, out Package p);
                     // check if success
-                    if (state == PackageState.Installed)
-                    {
-                        Console.WriteLine($"{opts.PackageId} was updated to version {package.Assets[0].Version}");
-                        return 0;
-                    }
-                    else if (state == PackageState.UpToDate)
-                    {
-                        Console.WriteLine($"{opts.PackageId} is already up to date");
-                        return 0;
-                    }
-                    else // PackageState.Failed
-                    {
-                        Console.WriteLine(Output.Red($"Something went wrong"));
-                    }
+                    if (state != PackageState.Installed)
+                        Console.WriteLine(Output.Red($"Something went wrong updating {package.ID}"));
                 }
             }
 
-            return 1;
+            return 0;
         }
 
         /// <summary>
