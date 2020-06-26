@@ -40,6 +40,7 @@ namespace DarkRift.Cli
                     state = PackageManager.InstallBySdkVersion(opts.PackageId, out package);
             }
 
+            // version of the asset that was installed
             if (package != null && package.Assets.Count > 0)
                 opts.RealPackageVersion = package.Assets[0].Version;
 
@@ -114,6 +115,7 @@ namespace DarkRift.Cli
                     state = PackageManager.UpdateBySdkVersion(opts.PackageId, out package);
             }
 
+            // version of the asset that was installed
             if (package != null && package.Assets.Count > 0)
                 opts.RealPackageVersion = package.Assets[0].Version;
 
@@ -182,7 +184,7 @@ namespace DarkRift.Cli
                     }
                     else if (serverVersion > version)
                     {
-                        Console.WriteLine($"Server says the latest version of the CLI is {versionMetadata.Latest}.");
+                        Console.WriteLine($"Most recent CLI version is {versionMetadata.Latest}.");
                         Console.WriteLine($"Current version installed is {version}");
                         Console.WriteLine("Updating");
 
@@ -204,7 +206,7 @@ namespace DarkRift.Cli
 
                         ZipFile.ExtractToDirectory(stagingPath, Path.Combine(myPath, Assembly.GetEntryAssembly().GetName().Name, ".dll"), true);
 
-                        Console.WriteLine(Output.Green($"Successfully downloaded and installed DarkRift CLI {serverVersion}"));
+                        Console.WriteLine(Output.Green($"Successfully downloaded and installed DarkRift CLI version {serverVersion}"));
 
                         return 0;
                     }

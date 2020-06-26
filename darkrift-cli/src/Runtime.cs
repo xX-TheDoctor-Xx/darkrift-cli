@@ -14,18 +14,16 @@ namespace DarkRift.Cli
         /// </summary>
         public string Version { get; set; }
 
-        // This converts enum to string and vice versa when generating or parsing json
-        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// If .NET core or .NET framework should be used.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))] // This converts enum to string and vice versa when generating or parsing json
         public ServerPlatform Platform { get; set; }
 
-        // This converts enum to string and vice versa when generating or parsing json
-        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// The tier of DarkRift to use.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))] // This converts enum to string and vice versa when generating or parsing json
         public ServerTier Tier { get; set; }
 
         /// <summary>

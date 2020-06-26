@@ -144,7 +144,7 @@ namespace DarkRift.Cli
         }
 
         /// <summary>
-        /// Prints version information on the console
+        /// Prints formatted DarkRift version information on the console
         /// </summary>
         /// <param name="version">The version to be printed.</param>
         /// <param name="pro">Whether the pro version should be used.</param>
