@@ -113,14 +113,13 @@ namespace DarkRift.Cli
             {
                 string myPath = Directory.GetDirectoryRoot(Assembly.GetEntryAssembly().Location);
 
-                string uri = $"https://www.darkriftnetworking.com/DarkRiftCLI/Releases/";
                 using (WebClient myWebClient = new WebClient())
                 {
                     string latestJson = null;
 
                     try
                     {
-                        latestJson = myWebClient.DownloadString(uri);
+                        latestJson = myWebClient.DownloadString(Config.DR_CLI_RELEASE_URI);
                     }
                     catch (WebException)
                     {
@@ -147,7 +146,7 @@ namespace DarkRift.Cli
 
                         string stagingPath = Path.Combine(Config.USER_DR_DIR, "DownloadCLI.zip");
 
-                        string uriDownload = $"https://www.darkriftnetworking.com/DarkRiftCLI/Releases/{serverVersion}";
+                        string uriDownload = $"{Config.DR_CLI_RELEASE_URI}/{serverVersion}";
 
                         try
                         {
@@ -161,7 +160,7 @@ namespace DarkRift.Cli
 
                         Console.WriteLine($"Extracting package...");
 
-                        ZipFile.ExtractToDirectory(stagingPath, Path.Combine(myPath, Assembly.GetEntryAssembly().GetName().Name, ".dll"), true);
+                        ZipFile.ExtractToDirectory(stagingPath, myPath, true);
 
                         Console.WriteLine(Output.Green($"Successfully downloaded and installed DarkRift CLI version {serverVersion}"));
 

@@ -18,6 +18,13 @@ namespace DarkRift.Cli
 
         public static int Main(string[] args)
         {
+            // This needs to be properly set
+            PMF.Config.CurrentSdkVersion = "0.0.1";
+            PMF.Config.ManifestFileName = "manifest.json";
+            PMF.Config.PackageInstallationFolder = ".packages";
+            PMF.Config.RepositoryEndpoint = "http://localhost:3000/package";
+            PMF.Config.IsDebugging = true;
+
             PMF.PMF.OnPackageMessage += PMF_OnPackageMessage;
 
             Directory.CreateDirectory(Config.USER_DR_DIR);
@@ -242,7 +249,7 @@ namespace DarkRift.Cli
             }
             else if (opts.Version != null)
             {
-                BrowserUtil.OpenTo($"https://darkriftnetworking.com/DarkRift2/Docs/{opts.Version}");
+                BrowserUtil.OpenTo($"{Config.DR_DR2_DOCS_URI}/{opts.Version}");
             }
 
             return 0;
@@ -263,13 +270,6 @@ namespace DarkRift.Cli
                 Console.Error.WriteLine(Output.Red("The current folder is not a project"));
                 return 1;
             }
-
-            // This needs to be properly set
-            PMF.Config.CurrentSdkVersion = "0.0.1";
-            PMF.Config.ManifestFileName = "manifest.json";
-            PMF.Config.PackageInstallationFolder = ".packages";
-            PMF.Config.RepositoryEndpoint = "http://localhost:3000/package";
-            PMF.Config.IsDebugging = true;
 
             // this will always be necessary unless the option is update
             if (string.IsNullOrEmpty(opts.PackageId) && opts.PackageOperation != PackageOperation.Update)

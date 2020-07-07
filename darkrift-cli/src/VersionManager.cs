@@ -42,7 +42,7 @@ namespace DarkRift.Cli
 
             string stagingPath = Path.Combine(Config.USER_DR_DIR, "Download.zip");
 
-            string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/{version}/{tier}/{platform}/";
+            string uri = $"{Config.DR_DR2_RELEASE_URI}/{version}/{tier}/{platform}/";
             if (tier == ServerTier.Pro)
             {
                 string invoiceNumber = GetInvoiceNumber();
@@ -177,12 +177,11 @@ namespace DarkRift.Cli
 
             Console.WriteLine("Querying server for the latest DarkRift version...");
 
-            string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/";
             try
             {
                 using (WebClient myWebClient = new WebClient())
                 {
-                    string latestJson = myWebClient.DownloadString(uri);
+                    string latestJson = myWebClient.DownloadString(Config.DR_DR2_RELEASE_URI);
 
                     // Parse out 'latest' field
                     VersionMetadata versionMetadata = VersionMetadata.Parse(latestJson);
@@ -261,7 +260,7 @@ namespace DarkRift.Cli
 
             string stagingPath = Path.Combine(Config.USER_DR_DIR, "Download.zip");
 
-            string uri = $"https://www.darkriftnetworking.com/DarkRift2/Releases/{version}/Docs/";
+            string uri = $"{Config.DR_DR2_RELEASE_URI}/{version}/Docs/";
 
             try
             {
