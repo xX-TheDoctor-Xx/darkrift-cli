@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 
 namespace DarkRift.Cli
 {
@@ -144,7 +143,7 @@ namespace DarkRift.Cli
                     {
                         Console.WriteLine($"Most recent CLI version is {versionMetadata.Latest}.");
                         Console.WriteLine($"Current version installed is {version}");
-                        Console.WriteLine("Updating");
+                        Console.WriteLine("Updating...");
 
                         string stagingPath = Path.Combine(Config.USER_DR_DIR, "DownloadCLI.zip");
 
@@ -168,6 +167,7 @@ namespace DarkRift.Cli
 
                         return 0;
                     }
+                    // This shouldn't happen
                     else
                     {
                         Console.WriteLine("How can you possibly have a greater version than it is on the server???");

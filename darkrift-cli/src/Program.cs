@@ -1,17 +1,11 @@
-﻿using System.Text.RegularExpressions;
-using System.Reflection.Metadata;
-using System.Reflection;
-using System.Linq;
+﻿using System.Linq;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
 using CommandLine;
 using Crayon;
 using System.Collections.Generic;
-using PMF.Managers;
-using PMF;
 
 namespace DarkRift.Cli
 {
@@ -128,13 +122,13 @@ namespace DarkRift.Cli
             IEnumerable<string> args;
             if (Project.Runtime.Platform == ServerPlatform.Framework)
             {
-                fullPath = Path.Combine(path, "DarkRift.Server.Console.exe");
+                fullPath = Path.Combine(path, Config.DR_EXECUTABLE_NAME);
                 args = opts.Values;
             }
             else
             {
                 fullPath = "dotnet";
-                args = opts.Values.Prepend(Path.Combine(path, "Lib", "DarkRift.Server.Console.dll"));
+                args = opts.Values.Prepend(Path.Combine(path, "Lib", Config.DR_DLL_NAME));
             }
 
             using (Process process = new Process())
@@ -174,7 +168,7 @@ namespace DarkRift.Cli
                 }
                 else
                 {
-                    Console.Error.WriteLine(Output.Red($"Couldn't find a version to install. To download latest version use option --latest"));
+                    Console.Error.WriteLine(Output.Red($"Couldn't find a version to install. To download latest version use \"latest\" as the version"));
                     return 2;
                 }
             }
@@ -280,13 +274,13 @@ namespace DarkRift.Cli
             // this will always be necessary unless the option is update
             if (string.IsNullOrEmpty(opts.PackageId) && opts.PackageOperation != PackageOperation.Update)
             {
-                Console.Error.WriteLine($"No package was specified, use -p or --package");
+                Console.Error.WriteLine($"No package was specified");
                 return 1;
             }
 
-            PackageManager.Start();
+            PMF.PMF.Start();
 
-            // This is to make sure LocalPackageManager.Stop() is called at the end of the method
+            // This is to make sure PMF.PMF.Stop() is called at the end of the method
             // This value is returned ater this method
             int returnValue = 0;
 
@@ -303,7 +297,7 @@ namespace DarkRift.Cli
                 returnValue = DarkRiftPackageManager.Update(opts);
             }
 
-            PackageManager.Stop();
+            PMF.PMF.Stop();
             return returnValue;
         }
     }

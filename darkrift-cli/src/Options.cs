@@ -1,14 +1,13 @@
 ﻿using CommandLine;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DarkRift.Cli
 {
     [Verb("new", HelpText = "Create a new DarkRift project.")]
     public class NewOptions
     {
-        [Option('f', Default = false, HelpText = "Force creation overwriting any files that already exist in the directory.")]
+        [Option('f', "force", Default = false, HelpText = "Force creation overwriting any files that already exist in the directory.")]
         public bool Force { get; set; }
 
         [Value(0, HelpText = "The name of the template to unpack.", Required = true)]
@@ -17,7 +16,7 @@ namespace DarkRift.Cli
         [Value(1, HelpText = "The directory to unpack the template in.")]
         public string TargetDirectory { get; set; }
 
-        [Option("version", HelpText = "Specify the DarkRift version to use.")]
+        [Option('v', "version", HelpText = "Specify the DarkRift version to use.")]
         public string Version { get; set; }
 
         [Option('p', "pro", Default = false, HelpText = "Use the pro version.")]
@@ -86,7 +85,7 @@ namespace DarkRift.Cli
         public string PackageId { get; set; }
 
         // This is here for convinience
-        [Option('v', "version", Default = "latest", HelpText = "Version of the package to be installed. Use \"latest\" for the latest version")]
+        [Option('v', "version", Default = "latest", HelpText = "Version of the package to be installed. Use \"-v latest\" for the latest version")]
         public string PackageVersion { get; set; }
 
         public Version RealPackageVersion { get; set; }

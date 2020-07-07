@@ -1,5 +1,4 @@
-
-namespace DarkRift.Cli
+﻿namespace DarkRift.Cli
 {
     /// <summary>
     /// The .NET platform the server targets.

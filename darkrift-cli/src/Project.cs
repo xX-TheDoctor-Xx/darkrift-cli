@@ -1,8 +1,5 @@
-﻿using PMF;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace DarkRift.Cli
 {
